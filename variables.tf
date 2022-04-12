@@ -1,7 +1,11 @@
-variable "prefix" {
-  description = "Name prefix for the resources created by this modules"
-  type        = string
-  default     = "observe-collection"
+variable "name" {
+  type    = string
+  default = "observe-collection"
+
+  validation {
+    condition     = length(var.name) <= 20
+    error_message = "The name must be less than 20 characters long."
+  }
 }
 
 variable "observe_customer" {
@@ -21,6 +25,6 @@ variable "observe_domain" {
 }
 
 variable "region" {
-  description = "The Google Cloud region to deploy resources to"
+  description = "The Google Cloud region to deploy resources in"
   type        = string
 }
