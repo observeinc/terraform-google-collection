@@ -28,3 +28,27 @@ variable "region" {
   description = "The Google Cloud region to deploy resources in"
   type        = string
 }
+
+variable "pubsub_ack_deadline_seconds" {
+  description = "Ack deadline for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
+  type        = number
+  default     = 60
+}
+
+variable "pubsub_message_retention_duration" {
+  description = "Message retention for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
+  type        = string
+  default     = "86400s"
+}
+
+variable "pubsub_minimum_backoff" {
+  description = "Retry policy minimum backoff for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
+  type        = string
+  default     = "10s"
+}
+
+variable "pubsub_maximum_backoff" {
+  description = "Retry policy maximum backoff for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
+  type        = string
+  default     = "600s"
+}

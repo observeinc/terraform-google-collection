@@ -39,11 +39,11 @@ resource "google_pubsub_subscription" "this" {
   name  = var.name
   topic = google_pubsub_topic.this.name
 
-  ack_deadline_seconds       = 60
-  message_retention_duration = "86400s" // 24 hours
+  ack_deadline_seconds       = var.pubsub_ack_deadline_seconds
+  message_retention_duration = var.pubsub_message_retention_duration
   retry_policy {
-    minimum_backoff = "10s"
-    maximum_backoff = "600s"
+    minimum_backoff = var.pubsub_minimum_backoff
+    maximum_backoff = var.pubsub_maximum_backoff
   }
 }
 
