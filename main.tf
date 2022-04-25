@@ -54,6 +54,8 @@ resource "google_cloud_asset_project_feed" "this" {
     "access-policy" = "ACCESS_POLICY"
   }
 
+  billing_project = data.google_client_config.this.project
+
   feed_id      = "${var.name}-${each.key}"
   asset_types  = [".*"]
   content_type = each.value
