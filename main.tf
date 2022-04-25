@@ -1,22 +1,19 @@
 locals {
-  pubsub_url_path = base64encode("${var.observe_customer}:${var.observe_token}")
+  project = data.google_client_config.this.project
+  region  = data.google_client_config.this.region
 }
 
-data "google_project" "current" {
-}
+data "google_client_config" "this" {}
 
 resource "google_project_service" "this" {
-  for_each = toset([
-    "storage.googleapis.com",
-    "pubsub.googleapis.com",
-    "cloudasset.googleapis.com",
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "cloudscheduler.googleapis.com",
-  ])
+  for_each = toset(var.project_services)
 
-  service                    = each.key
+  service = each.key
+
+  # These variables are set to false because we have not tested what happens
+  # when the services were previously enabled. We do not want to end up
+  # breaking other infrastructure in the Google project by disabling a service
+  # when it's still being used.
   disable_dependent_services = false
   disable_on_destroy         = false
 }
@@ -24,14 +21,14 @@ resource "google_project_service" "this" {
 resource "google_storage_bucket" "asset_inventory_export" {
   name          = "${var.name}-asset-inventory-export"
   force_destroy = true
-  location      = var.region
+  location      = local.region
 }
 
 resource "google_pubsub_topic" "this" {
   name = var.name
 
   message_storage_policy {
-    allowed_persistence_regions = [var.region]
+    allowed_persistence_regions = [local.region]
   }
 }
 
@@ -93,14 +90,14 @@ resource "google_project_iam_member" "cloud_functions" {
     "roles/pubsub.publisher",
   ])
 
-  project = data.google_project.current.project_id
+  project = local.project
   role    = each.key
   member  = "serviceAccount:${google_service_account.cloud_functions.email}"
 }
 
 resource "google_cloudfunctions_function" "start_export" {
   name   = "${var.name}-start-export"
-  region = var.region
+  region = local.region
 
   description = "Trigger a Cloud Asset export to Cloud Storage"
 
@@ -116,16 +113,16 @@ resource "google_cloudfunctions_function" "start_export" {
 
   environment_variables = {
     "BUCKET"     = google_storage_bucket.asset_inventory_export.name
-    "PROJECT_ID" = data.google_project.current.project_id
+    "PROJECT_ID" = local.project
     "TOPIC_ID"   = google_pubsub_topic.this.name
   }
 
-  max_instances = 5
+  max_instances = var.cloud_function_max_instances
 }
 
 resource "google_cloudfunctions_function" "process_export" {
   name   = "${var.name}-process-export"
-  region = var.region
+  region = local.region
 
   description = "Write the contents of a Cloud Asset export to Pub/Sub"
 
@@ -143,11 +140,11 @@ resource "google_cloudfunctions_function" "process_export" {
 
   environment_variables = {
     "BUCKET"     = google_storage_bucket.asset_inventory_export.name
-    "PROJECT_ID" = data.google_project.current.project_id
+    "PROJECT_ID" = local.project
     "TOPIC_ID"   = google_pubsub_topic.this.name
   }
 
-  max_instances = 5
+  max_instances = var.cloud_function_max_instances
 }
 
 resource "google_service_account" "cloud_scheduler" {
@@ -156,7 +153,7 @@ resource "google_service_account" "cloud_scheduler" {
 }
 
 resource "google_project_iam_member" "cloud_scheduler_cloud_function_invoker" {
-  project = data.google_project.current.project_id
+  project = local.project
   role    = "roles/cloudfunctions.invoker"
   member  = "serviceAccount:${google_service_account.cloud_scheduler.email}"
 }

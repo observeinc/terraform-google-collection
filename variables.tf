@@ -8,25 +8,18 @@ variable "name" {
   }
 }
 
-variable "observe_customer" {
-  description = "Observe Customer ID"
-  type        = string
-}
-
-variable "observe_token" {
-  description = "Observe Token"
-  type        = string
-}
-
-variable "observe_domain" {
-  description = "Observe Domain"
-  type        = string
-  default     = "observeinc.com"
-}
-
-variable "region" {
-  description = "The Google Cloud region to deploy resources in"
-  type        = string
+variable "project_services" {
+  description = "Google Cloud Services to be enabled (https://cloud.google.com/service-usage/docs/enable-disable)"
+  type        = list(string)
+  default = [
+    "storage.googleapis.com",
+    "pubsub.googleapis.com",
+    "cloudasset.googleapis.com",
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudscheduler.googleapis.com",
+  ]
 }
 
 variable "pubsub_ack_deadline_seconds" {
@@ -51,4 +44,10 @@ variable "pubsub_maximum_backoff" {
   description = "Retry policy maximum backoff for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
   type        = string
   default     = "600s"
+}
+
+variable "cloud_function_max_instances" {
+  description = "Max number of instances per Cloud Function (https://cloud.google.com/functions/docs/configuring/max-instances)"
+  type        = number
+  default     = 5
 }
