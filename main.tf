@@ -174,3 +174,23 @@ resource "google_cloud_scheduler_job" "this" {
     }
   }
 }
+
+resource "google_service_account" "poller" {
+  account_id  = "${var.name}-poll"
+  description = "A service account for the Observe Pub/Sub and Logging pollers"
+}
+
+resource "google_project_iam_member" "poller" {
+  for_each = toset([
+    "roles/pubsub.subscriber",
+    "roles/monitoring.viewer",
+  ])
+
+  project = local.project
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.poller.email}"
+}
+
+resource "google_service_account_key" "poller" {
+  service_account_id = google_service_account.poller.name
+}
