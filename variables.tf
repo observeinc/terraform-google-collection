@@ -37,3 +37,9 @@ variable "cloud_function_max_instances" {
   type        = number
   default     = 5
 }
+
+variable "storage_retention_in_days" {
+  description = "How long to retain files in the Cloud Storage bucket"
+  type        = number
+  default     = 7
+}

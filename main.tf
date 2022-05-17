@@ -9,6 +9,15 @@ resource "google_storage_bucket" "asset_inventory_export" {
   name          = "${var.name}-asset-inventory-export"
   force_destroy = true
   location      = local.region
+
+  lifecycle_rule {
+    condition {
+      age = var.storage_retention_in_days
+    }
+    action {
+      type = "Delete"
+    }
+  }
 }
 
 resource "google_pubsub_topic" "this" {
