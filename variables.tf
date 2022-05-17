@@ -8,20 +8,6 @@ variable "name" {
   }
 }
 
-variable "project_services" {
-  description = "Google Cloud Services to be enabled (https://cloud.google.com/service-usage/docs/enable-disable)"
-  type        = list(string)
-  default = [
-    "storage.googleapis.com",
-    "pubsub.googleapis.com",
-    "cloudasset.googleapis.com",
-    "logging.googleapis.com",
-    "monitoring.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "cloudscheduler.googleapis.com",
-  ]
-}
-
 variable "pubsub_ack_deadline_seconds" {
   description = "Ack deadline for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
   type        = number

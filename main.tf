@@ -5,19 +5,6 @@ locals {
 
 data "google_client_config" "this" {}
 
-resource "google_project_service" "this" {
-  for_each = toset(var.project_services)
-
-  service = each.key
-
-  # These variables are set to false because we have not tested what happens
-  # when the services were previously enabled. We do not want to end up
-  # breaking other infrastructure in the Google project by disabling a service
-  # when it's still being used.
-  disable_dependent_services = false
-  disable_on_destroy         = false
-}
-
 resource "google_storage_bucket" "asset_inventory_export" {
   name          = "${var.name}-asset-inventory-export"
   force_destroy = true
