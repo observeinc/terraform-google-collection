@@ -1,13 +1,16 @@
-output "project_id" {
-  description = "" // TODO:
-  value       = data.google_client_config.this.project
+output "project" {
+  description = "The ID of the Project in which resources were created"
+  value       = local.project
 }
 
-output "subscription_id" {
-  description = <<EOF
-    The id of the Pub/Sub subscription created by this module (example: observe-collection)".
-  EOF
-  value       = google_pubsub_subscription.this.name
+output "region" {
+  description = "The region in which resources were created"
+  value       = local.region
+}
+
+output "subscription" {
+  description = "The Pub/Sub subscription created by this module."
+  value       = google_pubsub_subscription.this
 }
 
 output "service_account_key" {
