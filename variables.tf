@@ -1,6 +1,7 @@
 variable "name" {
-  type    = string
-  default = "observe-collection"
+  type        = string
+  description = "Module name. Used as a name prefix."
+  default     = "observe-collection"
 
   validation {
     condition     = length(var.name) <= 20

@@ -45,11 +45,11 @@ resource "google_pubsub_subscription" "this" {
 }
 
 resource "google_cloud_asset_project_feed" "this" {
-  // Content types "OS_INVENTORY" and "RELATIONSHIP" are not supported yet by
-  // the GCP terraform provider
+  # Content types "OS_INVENTORY" and "RELATIONSHIP" are not supported yet by
+  # the GCP terraform provider
   for_each = toset(var.asset_content_types)
 
-  feed_id      = "${var.name}-${replace(lower(each.value), "_", "-")}" // underscores not allowed in id
+  feed_id      = "${var.name}-${replace(lower(each.value), "_", "-")}" # underscores not allowed in id
   asset_names  = var.asset_names
   asset_types  = var.asset_types
   content_type = each.value
@@ -119,7 +119,7 @@ resource "google_cloudfunctions_function" "start_export" {
   source_archive_object = "cloudfunctions.zip"
 
   trigger_http     = true
-  ingress_settings = "ALLOW_ALL" // Needed so that Cloud Scheduler can trigger the Cloud Function
+  ingress_settings = "ALLOW_ALL" # Needed so that Cloud Scheduler can trigger the Cloud Function
 
   environment_variables = {
     "BUCKET"     = google_storage_bucket.asset_inventory_export.name
