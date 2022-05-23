@@ -37,28 +37,32 @@ func initAssetVars() {
 	contentTypeStr := os.Getenv("CONTENT_TYPES")
 
 	var err error
-	err = json.Unmarshal([]byte(assetTypeStr), &assetTypes)
-	if err != nil {
-		panic(err)
+	if assetTypeStr != "" {
+		err = json.Unmarshal([]byte(assetTypeStr), &assetTypes)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	var contentTypeNames []string
-	err = json.Unmarshal([]byte(contentTypeStr), &contentTypeNames)
-	if err != nil {
-		panic(err)
-	}
+	if contentTypeStr != "" {
+		var contentTypeNames []string
+		err = json.Unmarshal([]byte(contentTypeStr), &contentTypeNames)
+		if err != nil {
+			panic(err)
+		}
 
-	for _, name := range contentTypeNames {
-		v, ok := assetpb.ContentType_value[name]
-		if !ok {
-			panic(fmt.Sprintf("unknown content type: %s", name))
+		for _, name := range contentTypeNames {
+			v, ok := assetpb.ContentType_value[name]
+			if !ok {
+				panic(fmt.Sprintf("unknown content type: %s", name))
+			}
+			if v == int32(assetpb.ContentType_RELATIONSHIP) {
+				// We cannot import relationships until the following issue is resolved: https://issuetracker.google.com/issues/209387751
+				// assetpb.ContentType_RELATIONSHIP,
+				panic("exports for content type relationship are unsupported:  https://issuetracker.google.com/issues/209387751")
+			}
+			contentTypes = append(contentTypes, assetpb.ContentType(v))
 		}
-		if v == int32(assetpb.ContentType_RELATIONSHIP) {
-			// We cannot import relationships until the following issue is resolved: https://issuetracker.google.com/issues/209387751
-			// assetpb.ContentType_RELATIONSHIP,
-			panic("exports for content type relationship are unsupported:  https://issuetracker.google.com/issues/209387751")
-		}
-		contentTypes = append(contentTypes, assetpb.ContentType(v))
 	}
 }
 
