@@ -74,7 +74,7 @@ variable "asset_types" {
     By default, all supported assets are fetched (https://cloud.google.com/asset-inventory/docs/supported-asset-types)
   EOF
   type        = list(string)
-  default     = ["*"]
+  default     = [".*"]
 }
 
 variable "asset_content_types" {
