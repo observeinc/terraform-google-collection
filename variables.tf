@@ -53,18 +53,6 @@ variable "logging_exclusions" {
   default = []
 }
 
-variable "asset_names" {
-  description = <<-EOF
-    A list of full names of Cloud Asset assets that will be exported to Observe.
-
-    For example: //compute.googleapis.com/projects/my_project_123/zones/zone1/instances/instance1. See https://cloud.google.com/apis/design/resourceNames#fullResourceName for more info.
-
-    By default, all supported assets are fetched (https://cloud.google.com/asset-inventory/docs/supported-asset-types)
-  EOF
-  type        = list(string)
-  default     = []
-}
-
 variable "asset_types" {
   description = <<-EOF
     A list of types of Cloud Asset assets that will be exported to Observe.

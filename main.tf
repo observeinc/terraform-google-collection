@@ -50,7 +50,6 @@ resource "google_cloud_asset_project_feed" "this" {
   for_each = toset(var.asset_content_types)
 
   feed_id      = "${var.name}-${replace(lower(each.value), "_", "-")}" # underscores not allowed in id
-  asset_names  = var.asset_names
   asset_types  = var.asset_types
   content_type = each.value
 
@@ -126,7 +125,6 @@ resource "google_cloudfunctions_function" "start_export" {
     "PROJECT_ID" = local.project
     "TOPIC_ID"   = google_pubsub_topic.this.name
 
-    "ASSET_NAMES"   = jsonencode(var.asset_names)
     "ASSET_TYPES"   = jsonencode(var.asset_types)
     "CONTENT_TYPES" = jsonencode(var.asset_content_types)
   }

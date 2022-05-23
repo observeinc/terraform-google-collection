@@ -3,6 +3,7 @@ package cloudfunctions
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,7 +22,44 @@ var (
 	uriPrefix = "gs://" + os.Getenv("BUCKET") + "/"
 	projectID = os.Getenv("PROJECT_ID")
 	topicId   = os.Getenv("TOPIC_ID")
+
+	assetTypes   []string
+	contentTypes []assetpb.ContentType
 )
+
+func init() {
+	initAssetVars()
+}
+
+func initAssetVars() {
+	assetTypeStr := os.Getenv("ASSET_TYPES")
+	contentTypeStr := os.Getenv("CONTENT_TYPES")
+
+	var err error
+	err = json.Unmarshal([]byte(assetTypeStr), &assetTypes)
+	if err != nil {
+		panic(err)
+	}
+
+	var contentTypeNames []string
+	err = json.Unmarshal([]byte(contentTypeStr), &contentTypeNames)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, name := range contentTypeNames {
+		v, ok := assetpb.ContentType_value[name]
+		if !ok {
+			panic(fmt.Sprintf("unknown content type: %s", name))
+		}
+		if v == int32(assetpb.ContentType_RELATIONSHIP) {
+			// We cannot import relationships until the following issue is resolved: https://issuetracker.google.com/issues/209387751
+			// assetpb.ContentType_RELATIONSHIP,
+			panic("exports for content type relationship are unsupported:  https://issuetracker.google.com/issues/209387751")
+		}
+		contentTypes = append(contentTypes, assetpb.ContentType(v))
+	}
+}
 
 func buildObjectName(uriPrefix string, contentType assetpb.ContentType, snapshotTime time.Time) string {
 	return uriPrefix + "-" + assetpb.ContentType_name[int32(contentType)] + "-" + strconv.FormatInt(snapshotTime.UnixNano(), 10)
@@ -52,16 +90,6 @@ func StartExport(w http.ResponseWriter, r *http.Request) {
 	}
 	defer client.Close()
 
-	contentTypes := []assetpb.ContentType{
-		assetpb.ContentType_RESOURCE,
-		assetpb.ContentType_IAM_POLICY,
-		assetpb.ContentType_ORG_POLICY,
-		assetpb.ContentType_ACCESS_POLICY,
-		assetpb.ContentType_OS_INVENTORY,
-		// We cannot import relationships until the following issue is resolved: https://issuetracker.google.com/issues/209387751
-		// assetpb.ContentType_RELATIONSHIP,
-	}
-
 	for _, contentType := range contentTypes {
 		// Set snapshotTime to 1 minute ago because of the following issue with ExportAssets:
 		// "Due to delays in resource data collection and indexing, there is a volatile window during which running the same query may get different results."
@@ -69,6 +97,7 @@ func StartExport(w http.ResponseWriter, r *http.Request) {
 
 		_, err = client.ExportAssets(ctx, &assetpb.ExportAssetsRequest{
 			Parent:      fmt.Sprintf("projects/%s", projectID),
+			AssetTypes:  assetTypes,
 			ContentType: contentType,
 			ReadTime:    timestamppb.New(snapshotTime),
 			OutputConfig: &assetpb.OutputConfig{
