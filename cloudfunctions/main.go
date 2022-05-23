@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -94,6 +95,8 @@ func StartExport(w http.ResponseWriter, r *http.Request) {
 		// Set snapshotTime to 1 minute ago because of the following issue with ExportAssets:
 		// "Due to delays in resource data collection and indexing, there is a volatile window during which running the same query may get different results."
 		snapshotTime := time.Now().Add(-time.Minute)
+		uri := buildObjectName(uriPrefix, contentType, snapshotTime)
+		log.Printf("starting export with destination %s", uri)
 
 		_, err = client.ExportAssets(ctx, &assetpb.ExportAssetsRequest{
 			Parent:      fmt.Sprintf("projects/%s", projectID),
@@ -142,6 +145,8 @@ func ProcessExport(ctx context.Context, e GCSEvent) error {
 	bkt := storageClient.Bucket(e.Bucket)
 	obj := bkt.Object(e.Name)
 
+	log.Printf("processing file %s", e.Name)
+
 	_, _, snapshotTime, err := parseObjectName(e.Name)
 	if err != nil {
 		return fmt.Errorf("parseObjectName: %w", err)
@@ -155,9 +160,11 @@ func ProcessExport(ctx context.Context, e GCSEvent) error {
 	topic := pubsubClient.Topic(topicId)
 	defer topic.Stop()
 
+	numLines := 0
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
+		numLines++
 
 		_ = topic.Publish(ctx, &pubsub.Message{
 			Data: []byte(line),
@@ -166,5 +173,8 @@ func ProcessExport(ctx context.Context, e GCSEvent) error {
 			},
 		})
 	}
+	log.Printf("published %d messages asynchronously", numLines)
+	topic.Flush()
+
 	return nil
 }
