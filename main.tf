@@ -113,7 +113,7 @@ data "archive_file" "function_code" {
 
 resource "google_storage_bucket_object" "function_code" {
   bucket = google_storage_bucket.function_code.name
-  // The name gets updated whenever the code changes, and Cloud Functions referencing this resource will get updated too
+  # The name gets updated whenever the code changes, and Cloud Functions referencing this resource will get updated too
   name   = "cloudfunctions-${data.archive_file.function_code.output_sha}.zip"
   source = data.archive_file.function_code.output_path
 }
@@ -209,8 +209,8 @@ resource "google_service_account_key" "poller" {
   service_account_id = google_service_account.poller.name
 }
 
-// Note: while we could use the "google_cloud_asset_project_feed" terraform resource,
-// it means a user cannot use user credentials in the provider, complicating setup.
+# Note: while we could use the "google_cloud_asset_project_feed" terraform resource,
+# it means a user cannot use user credentials in the provider, complicating setup.
 resource "google_cloudfunctions_function" "feed_management" {
   for_each = {
     "create" : {
@@ -254,7 +254,7 @@ resource "time_sleep" "wait_object_notification" {
   create_duration  = "10s"
   destroy_duration = "10s"
 
-  // triggers should change whenever we re-create the object below
+  # triggers should change whenever we re-create the object below
   triggers = local.function_env_vars
 
   depends_on = [google_cloudfunctions_function.feed_management]

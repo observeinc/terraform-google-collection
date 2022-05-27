@@ -15,7 +15,7 @@ provider "observe" {
 }
 
 module "observe_gcp_collection" {
-  source = "github.com/observeinc/terraform-google-collection"
+  source = "github.com/observeinc/terraform-google-collection?ref=main"
   name   = var.name
 }
 
@@ -58,7 +58,7 @@ resource "observe_poller" "gcp_metrics" {
 }
 
 module "google" {
-  source      = "github.com/observeinc/terraform-observe-google"
+  source      = "github.com/observeinc/terraform-observe-google?ref=main"
   workspace   = data.observe_workspace.default
   name_format = local.name_format
   datastream  = data.observe_datastream.gcp
