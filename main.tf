@@ -2,8 +2,6 @@ locals {
   project = data.google_client_config.this.project
   region  = data.google_client_config.this.region
 
-  function_code_bucket = "prototype-luke-asset-inventory"
-  function_code_object = "cloudfunctions.zip"
   function_env_vars = {
     "NAME"       = var.name
     "BUCKET"     = google_storage_bucket.asset_inventory_export.name
@@ -100,6 +98,26 @@ resource "google_project_iam_member" "cloud_functions" {
   member  = "serviceAccount:${google_service_account.cloud_functions.email}"
 }
 
+
+resource "google_storage_bucket" "function_code" {
+  name     = "${var.name}-code"
+  labels   = var.labels
+  location = local.region
+}
+
+resource "archive_file" "function_code" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloudfunctions/"
+  output_path = "${path.module}/cloudfunctions.zip"
+}
+
+resource "google_storage_bucket_object" "function_code" {
+  bucket = google_storage_bucket.function_code.name
+  // The name gets updated whenever the code changes, and Cloud Functions referencing this resource will get updated too
+  name   = "cloudfunctions-${archive_file.function_code.output_sha}.zip"
+  source = archive_file.function_code.output_path
+}
+
 resource "google_cloudfunctions_function" "start_export" {
   name   = "${var.name}-start-export"
   labels = var.labels
@@ -110,8 +128,8 @@ resource "google_cloudfunctions_function" "start_export" {
 
   runtime               = "go116"
   entry_point           = "StartExport"
-  source_archive_bucket = local.function_code_bucket
-  source_archive_object = local.function_code_object
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
 
   trigger_http     = true
   ingress_settings = "ALLOW_ALL" # Needed so that Cloud Scheduler can trigger the Cloud Function
@@ -131,8 +149,8 @@ resource "google_cloudfunctions_function" "process_export" {
 
   runtime               = "go116"
   entry_point           = "ProcessExport"
-  source_archive_bucket = local.function_code_bucket
-  source_archive_object = local.function_code_object
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
 
   event_trigger {
     event_type = "google.storage.object.finalize"
@@ -212,8 +230,8 @@ resource "google_cloudfunctions_function" "feed_management" {
 
   runtime               = "go116"
   entry_point           = "ManageFeeds"
-  source_archive_bucket = local.function_code_bucket
-  source_archive_object = local.function_code_object
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
 
   event_trigger {
     event_type = each.value.event_type
