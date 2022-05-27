@@ -3,5 +3,6 @@ terraform {
 
   required_providers {
     google = ">= 4.15"
+    time   = ">= 0.7.2"
   }
 }
