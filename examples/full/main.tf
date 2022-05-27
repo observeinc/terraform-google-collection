@@ -8,6 +8,7 @@ provider "google" {
   project = var.gcp_project
   region  = var.gcp_region
 }
+
 provider "observe" {
   customer = var.observe_customer
   domain   = var.observe_domain
