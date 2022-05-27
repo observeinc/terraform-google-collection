@@ -105,7 +105,7 @@ resource "google_storage_bucket" "function_code" {
   location = local.region
 }
 
-resource "archive_file" "function_code" {
+data "archive_file" "function_code" {
   type        = "zip"
   source_dir  = "${path.module}/cloudfunctions/"
   output_path = "${path.module}/cloudfunctions.zip"
@@ -114,8 +114,8 @@ resource "archive_file" "function_code" {
 resource "google_storage_bucket_object" "function_code" {
   bucket = google_storage_bucket.function_code.name
   // The name gets updated whenever the code changes, and Cloud Functions referencing this resource will get updated too
-  name   = "cloudfunctions-${archive_file.function_code.output_sha}.zip"
-  source = archive_file.function_code.output_path
+  name   = "cloudfunctions-${data.archive_file.function_code.output_sha}.zip"
+  source = data.archive_file.function_code.output_path
 }
 
 resource "google_cloudfunctions_function" "start_export" {
