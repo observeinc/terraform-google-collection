@@ -2,8 +2,6 @@ locals {
   project = data.google_client_config.this.project
   region  = data.google_client_config.this.region
 
-  function_code_bucket = "prototype-luke-asset-inventory"
-  function_code_object = "cloudfunctions.zip"
   function_env_vars = {
     "NAME"       = var.name
     "BUCKET"     = google_storage_bucket.asset_inventory_export.name
@@ -100,6 +98,26 @@ resource "google_project_iam_member" "cloud_functions" {
   member  = "serviceAccount:${google_service_account.cloud_functions.email}"
 }
 
+
+resource "google_storage_bucket" "function_code" {
+  name     = "${var.name}-code"
+  labels   = var.labels
+  location = local.region
+}
+
+data "archive_file" "function_code" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloudfunctions/"
+  output_path = "${path.module}/cloudfunctions.zip"
+}
+
+resource "google_storage_bucket_object" "function_code" {
+  bucket = google_storage_bucket.function_code.name
+  # The name gets updated whenever the code changes, and Cloud Functions referencing this resource will get updated too
+  name   = "cloudfunctions-${data.archive_file.function_code.output_sha}.zip"
+  source = data.archive_file.function_code.output_path
+}
+
 resource "google_cloudfunctions_function" "start_export" {
   name   = "${var.name}-start-export"
   labels = var.labels
@@ -110,8 +128,9 @@ resource "google_cloudfunctions_function" "start_export" {
 
   runtime               = "go116"
   entry_point           = "StartExport"
-  source_archive_bucket = local.function_code_bucket
-  source_archive_object = local.function_code_object
+
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
 
   trigger_http     = true
   ingress_settings = "ALLOW_ALL" # Needed so that Cloud Scheduler can trigger the Cloud Function
@@ -131,8 +150,8 @@ resource "google_cloudfunctions_function" "process_export" {
 
   runtime               = "go116"
   entry_point           = "ProcessExport"
-  source_archive_bucket = local.function_code_bucket
-  source_archive_object = local.function_code_object
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
 
   event_trigger {
     event_type = "google.storage.object.finalize"
@@ -191,8 +210,8 @@ resource "google_service_account_key" "poller" {
   service_account_id = google_service_account.poller.name
 }
 
-// Note: while we could use the "google_cloud_asset_project_feed" terraform resource,
-// it means a user cannot use user credentials in the provider, complicating setup.
+# Note: while we could use the "google_cloud_asset_project_feed" terraform resource,
+# it means a user cannot use user credentials in the provider, complicating setup.
 resource "google_cloudfunctions_function" "feed_management" {
   for_each = {
     "create" : {
@@ -212,8 +231,8 @@ resource "google_cloudfunctions_function" "feed_management" {
 
   runtime               = "go116"
   entry_point           = "ManageFeeds"
-  source_archive_bucket = local.function_code_bucket
-  source_archive_object = local.function_code_object
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
 
   event_trigger {
     event_type = each.value.event_type
@@ -236,7 +255,7 @@ resource "time_sleep" "wait_object_notification" {
   create_duration  = "10s"
   destroy_duration = "10s"
 
-  // triggers should change whenever we re-create the object below
+  # triggers should change whenever we re-create the object below
   triggers = local.function_env_vars
 
   depends_on = [google_cloudfunctions_function.feed_management]

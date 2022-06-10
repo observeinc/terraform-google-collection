@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,10 +32,13 @@ var (
 )
 
 func init() {
-	getEnvVars()
+	err := getEnvVars()
+	if err != nil {
+		panic(fmt.Sprintf("getEnvVars: %s", err))
+	}
 }
 
-func getEnvVars() {
+func getEnvVars() error {
 	name = os.Getenv("NAME")
 	bucket = os.Getenv("BUCKET")
 	projectID = os.Getenv("PROJECT_ID")
@@ -46,7 +50,7 @@ func getEnvVars() {
 	if assetTypeStr != "" {
 		err = json.Unmarshal([]byte(assetTypeStr), &assetTypes)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 
@@ -54,22 +58,23 @@ func getEnvVars() {
 		var contentTypeNames []string
 		err = json.Unmarshal([]byte(contentTypeStr), &contentTypeNames)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		for _, name := range contentTypeNames {
 			v, ok := assetpb.ContentType_value[name]
 			if !ok {
-				panic(fmt.Sprintf("unknown content type: %s", name))
+				return fmt.Errorf("unknown content type: %s", name)
 			}
 			if v == int32(assetpb.ContentType_RELATIONSHIP) {
 				// We cannot import relationships until the following issue is resolved: https://issuetracker.google.com/issues/209387751
 				// assetpb.ContentType_RELATIONSHIP,
-				panic("exports for content type relationship are unsupported:  https://issuetracker.google.com/issues/209387751")
+				return errors.New("exports for content type relationship are unsupported:  https://issuetracker.google.com/issues/209387751")
 			}
 			contentTypes = append(contentTypes, assetpb.ContentType(v))
 		}
 	}
+	return nil
 }
 
 func buildObjectName(bucket string, contentType assetpb.ContentType, snapshotTime time.Time) string {
@@ -78,7 +83,6 @@ func buildObjectName(bucket string, contentType assetpb.ContentType, snapshotTim
 
 func parseObjectName(name string) (string, string, time.Time, error) {
 	parts := strings.Split(name, "/")
-
 	log.Printf("name split parts length = %d", len(parts))
 
 	if len(parts) != 3 && len(parts) != 2 {

@@ -26,13 +26,17 @@ module "observe_gcp_collection" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.21 |
+| <a name="requirement_archive"></a> [archive](#requirement\_archive) | >= 2.2.0 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | >= 4.15 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7.2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
+| <a name="provider_archive"></a> [archive](#provider\_archive) | >= 2.2.0 |
 | <a name="provider_google"></a> [google](#provider\_google) | >= 4.15 |
+| <a name="provider_time"></a> [time](#provider\_time) | >= 0.7.2 |
 
 ## Modules
 
@@ -42,8 +46,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [google_cloud_asset_project_feed.this](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_asset_project_feed) | resource |
 | [google_cloud_scheduler_job.this](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_scheduler_job) | resource |
+| [google_cloudfunctions_function.feed_management](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudfunctions_function) | resource |
 | [google_cloudfunctions_function.process_export](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudfunctions_function) | resource |
 | [google_cloudfunctions_function.start_export](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudfunctions_function) | resource |
 | [google_logging_project_sink.this](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/logging_project_sink) | resource |
@@ -58,6 +62,12 @@ No modules.
 | [google_service_account.poller](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account) | resource |
 | [google_service_account_key.poller](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account_key) | resource |
 | [google_storage_bucket.asset_inventory_export](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket) | resource |
+| [google_storage_bucket.feed_management](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket) | resource |
+| [google_storage_bucket.function_code](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket) | resource |
+| [google_storage_bucket_object.feed_management](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket_object) | resource |
+| [google_storage_bucket_object.function_code](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket_object) | resource |
+| [time_sleep.wait_object_notification](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
+| [archive_file.function_code](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
 | [google_client_config.this](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/client_config) | data source |
 
 ## Inputs
@@ -65,7 +75,6 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_asset_content_types"></a> [asset\_content\_types](#input\_asset\_content\_types) | A list of types of Cloud Asset content types that will be exported to observe.<br><br>See https://cloud.google.com/asset-inventory/docs/reference/rest/v1p7beta1/TopLevel/exportAssets#ContentType for a description of possible content types.<br>Content type RELATIONSHIP is not supported. | `list(string)` | <pre>[<br>  "RESOURCE",<br>  "IAM_POLICY",<br>  "ORG_POLICY",<br>  "ACCESS_POLICY"<br>]</pre> | no |
-| <a name="input_asset_names"></a> [asset\_names](#input\_asset\_names) | A list of full names of Cloud Asset assets that will be exported to Observe.<br><br>For example: //compute.googleapis.com/projects/my\_project\_123/zones/zone1/instances/instance1. See https://cloud.google.com/apis/design/resourceNames#fullResourceName for more info.<br><br>By default, all supported assets are fetched (https://cloud.google.com/asset-inventory/docs/supported-asset-types) | `list(string)` | `[]` | no |
 | <a name="input_asset_types"></a> [asset\_types](#input\_asset\_types) | A list of types of Cloud Asset assets that will be exported to Observe.<br><br>For example: "compute.googleapis.com/Disk". See https://cloud.google.com/asset-inventory/docs/supported-asset-types for a list of all supported asset types.<br><br>By default, all supported assets are fetched (https://cloud.google.com/asset-inventory/docs/supported-asset-types) | `list(string)` | <pre>[<br>  ".*"<br>]</pre> | no |
 | <a name="input_cloud_function_max_instances"></a> [cloud\_function\_max\_instances](#input\_cloud\_function\_max\_instances) | Max number of instances per Cloud Function (https://cloud.google.com/functions/docs/configuring/max-instances) | `number` | `5` | no |
 | <a name="input_labels"></a> [labels](#input\_labels) | A map of labels to add to resources (https://cloud.google.com/resource-manager/docs/creating-managing-labels)"<br><br>Note: Many, but not all, Google Cloud SDK resources support labels. | `map(string)` | `{}` | no |
