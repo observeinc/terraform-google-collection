@@ -128,6 +128,7 @@ resource "google_cloudfunctions_function" "start_export" {
 
   runtime               = "go116"
   entry_point           = "StartExport"
+
   source_archive_bucket = google_storage_bucket.function_code.name
   source_archive_object = google_storage_bucket_object.function_code.name
 

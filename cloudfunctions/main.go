@@ -83,13 +83,27 @@ func buildObjectName(bucket string, contentType assetpb.ContentType, snapshotTim
 
 func parseObjectName(name string) (string, string, time.Time, error) {
 	parts := strings.Split(name, "/")
-	if len(parts) != 3 {
-		return "", "", time.Time{}, fmt.Errorf("expected 3 parts after splitting (name=%s)", name)
+	log.Printf("name split parts length = %d", len(parts))
+
+	if len(parts) != 3 && len(parts) != 2 {
+		return "", "", time.Time{}, fmt.Errorf("expected 2 or 3 parts after splitting (name=%s)", name)
 	}
 
-	uriPrefix := parts[0]
-	contentType := parts[1]
-	timeStr := parts[2]
+	var uriPrefix string
+	var contentType string
+	var timeStr string
+
+	if len(parts) == 3 {
+		uriPrefix = parts[0]
+		contentType = parts[1]
+		timeStr = parts[2]
+	}
+
+	if len(parts) == 2 {
+		contentType = parts[0]
+		timeStr = parts[1]
+	}
+
 	timeInt, err := strconv.ParseInt(timeStr, 10, 64)
 	if err != nil {
 		return "", "", time.Time{}, fmt.Errorf("strconv.ParseInt: %w", err)
@@ -169,8 +183,10 @@ func ProcessExport(ctx context.Context, e GCSEvent) error {
 	obj := bkt.Object(e.Name)
 
 	log.Printf("processing file %s", e.Name)
+	log.Printf("Bucket Name %s", e.Bucket)
 
 	_, _, snapshotTime, err := parseObjectName(e.Name)
+
 	if err != nil {
 		return fmt.Errorf("parseObjectName: %w", err)
 	}
