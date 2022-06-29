@@ -17,7 +17,7 @@ provider "observe" {
 
 module "observe_gcp_collection" {
   # tflint-ignore: terraform_module_pinned_source
-  source = "github.com/observeinc/terraform-google-collection?ref=main"
+  source = "/home/luke/github.com/terraform-google-collection"
   name   = var.name
 }
 
@@ -61,7 +61,7 @@ resource "observe_poller" "gcp_metrics" {
 
 module "google" {
   # tflint-ignore: terraform_module_pinned_source
-  source      = "github.com/observeinc/terraform-observe-google?ref=main"
+  source      = "/home/luke/github.com/terraform-observe-google"
   workspace   = data.observe_workspace.default
   name_format = local.name_format
   datastream  = data.observe_datastream.gcp

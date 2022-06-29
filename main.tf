@@ -4,7 +4,6 @@ locals {
 
   function_env_vars = {
     "NAME"       = var.name
-    "BUCKET"     = google_storage_bucket.asset_inventory_export.name
     "PROJECT_ID" = local.project
     "TOPIC_ID"   = google_pubsub_topic.this.name
 
@@ -14,23 +13,6 @@ locals {
 }
 
 data "google_client_config" "this" {}
-
-resource "google_storage_bucket" "asset_inventory_export" {
-  name   = "${var.name}-asset-inventory-export"
-  labels = var.labels
-
-  force_destroy = true
-  location      = local.region
-
-  lifecycle_rule {
-    condition {
-      age = var.storage_retention_in_days
-    }
-    action {
-      type = "Delete"
-    }
-  }
-}
 
 resource "google_pubsub_topic" "this" {
   name   = var.name
@@ -118,17 +100,16 @@ resource "google_storage_bucket_object" "function_code" {
   source = data.archive_file.function_code.output_path
 }
 
-resource "google_cloudfunctions_function" "start_export" {
-  name   = "${var.name}-start-export"
+resource "google_cloudfunctions_function" "export" {
+  name   = "${var.name}-export"
   labels = var.labels
 
-  description = "Trigger a Cloud Asset export to Cloud Storage"
+  description = "List all Cloud Assets and write to Pub/Sub"
 
   service_account_email = google_service_account.cloud_functions.email
 
   runtime               = "go116"
-  entry_point           = "StartExport"
-
+  entry_point           = "Export"
   source_archive_bucket = google_storage_bucket.function_code.name
   source_archive_object = google_storage_bucket_object.function_code.name
 
@@ -137,30 +118,9 @@ resource "google_cloudfunctions_function" "start_export" {
 
   environment_variables = local.function_env_vars
 
-  max_instances = var.cloud_function_max_instances
-}
-
-resource "google_cloudfunctions_function" "process_export" {
-  name   = "${var.name}-process-export"
-  labels = var.labels
-
-  description = "Write the contents of a Cloud Asset export to Pub/Sub"
-
-  service_account_email = google_service_account.cloud_functions.email
-
-  runtime               = "go116"
-  entry_point           = "ProcessExport"
-  source_archive_bucket = google_storage_bucket.function_code.name
-  source_archive_object = google_storage_bucket_object.function_code.name
-
-  event_trigger {
-    event_type = "google.storage.object.finalize"
-    resource   = google_storage_bucket.asset_inventory_export.name
-  }
-
-  environment_variables = local.function_env_vars
-
-  max_instances = var.cloud_function_max_instances
+  max_instances       = var.cloud_function_max_instances
+  timeout             = var.cloud_function_timeout
+  available_memory_mb = var.cloud_function_memory
 }
 
 resource "google_service_account" "cloud_scheduler" {
@@ -182,7 +142,7 @@ resource "google_cloud_scheduler_job" "this" {
 
   http_target {
     http_method = "POST"
-    uri         = google_cloudfunctions_function.start_export.https_trigger_url
+    uri         = google_cloudfunctions_function.export.https_trigger_url
 
     oidc_token {
       service_account_email = google_service_account.cloud_scheduler.email
@@ -240,8 +200,9 @@ resource "google_cloudfunctions_function" "feed_management" {
   }
 
   environment_variables = local.function_env_vars
-
-  max_instances = var.cloud_function_max_instances
+  max_instances         = var.cloud_function_max_instances
+  timeout               = var.cloud_function_timeout
+  available_memory_mb   = var.cloud_function_memory
 }
 
 

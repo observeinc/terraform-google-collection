@@ -1,7 +1,6 @@
 package cloudfunctions
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -16,14 +15,13 @@ import (
 	asset "cloud.google.com/go/asset/apiv1"
 	"cloud.google.com/go/functions/metadata"
 	"cloud.google.com/go/pubsub"
-	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 	assetpb "google.golang.org/genproto/googleapis/cloud/asset/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
 	name      string
-	bucket    string
 	projectID string
 	topicID   string
 
@@ -40,7 +38,6 @@ func init() {
 
 func getEnvVars() error {
 	name = os.Getenv("NAME")
-	bucket = os.Getenv("BUCKET")
 	projectID = os.Getenv("PROJECT_ID")
 	topicID = os.Getenv("TOPIC_ID")
 	assetTypeStr := os.Getenv("ASSET_TYPES")
@@ -77,78 +74,71 @@ func getEnvVars() error {
 	return nil
 }
 
-func buildObjectName(bucket string, contentType assetpb.ContentType, snapshotTime time.Time) string {
-	return "gs://" + bucket + "/" + assetpb.ContentType_name[int32(contentType)] + "/" + strconv.FormatInt(snapshotTime.UnixNano(), 10)
-}
-
-func parseObjectName(name string) (string, string, time.Time, error) {
-	parts := strings.Split(name, "/")
-	log.Printf("name split parts length = %d", len(parts))
-
-	if len(parts) != 3 && len(parts) != 2 {
-		return "", "", time.Time{}, fmt.Errorf("expected 2 or 3 parts after splitting (name=%s)", name)
-	}
-
-	var uriPrefix string
-	var contentType string
-	var timeStr string
-
-	if len(parts) == 3 {
-		uriPrefix = parts[0]
-		contentType = parts[1]
-		timeStr = parts[2]
-	}
-
-	if len(parts) == 2 {
-		contentType = parts[0]
-		timeStr = parts[1]
-	}
-
-	timeInt, err := strconv.ParseInt(timeStr, 10, 64)
-	if err != nil {
-		return "", "", time.Time{}, fmt.Errorf("strconv.ParseInt: %w", err)
-	}
-	return uriPrefix, contentType, time.Unix(0, timeInt), nil
-}
-
-// StartExport is a Cloud Function HTTP endpoint that initializes multiple Cloud Asset export jobs.
-// One export job is created per type in "contentTypes" and assets are exported to the Cloud Storage bucket with name "bucket".
-func StartExport(w http.ResponseWriter, r *http.Request) {
+// Export lists all Cloud Assets and writes them to Pub/Sub
+//
+// Originally this was done with ExportAssets but there the rate limit of 6,000 requests per day that affected development
+func Export(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	client, err := asset.NewClient(ctx)
+	assetClient, err := asset.NewClient(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("asset.NewClient: %s", err)))
+		return
 	}
-	defer client.Close()
+	defer assetClient.Close()
+
+	pubsubClient, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("pubsub.NewClient: %s", err)))
+		return
+	}
+	defer pubsubClient.Close()
+
+	topic := pubsubClient.Topic(topicID)
+	defer topic.Stop()
 
 	for _, contentType := range contentTypes {
-		// Set snapshotTime to 1 minute ago because of the following issue with ExportAssets:
+		// Set snapshotTime to 1 minute ago because of the following issue:
 		// "Due to delays in resource data collection and indexing, there is a volatile window during which running the same query may get different results."
 		snapshotTime := time.Now().Add(-time.Minute)
-		uri := buildObjectName(bucket, contentType, snapshotTime)
-		log.Printf("starting export with destination %s", uri)
+		log.Printf("listing exports for content type %s", assetpb.ContentType_name[int32(contentType)])
 
-		_, err = client.ExportAssets(ctx, &assetpb.ExportAssetsRequest{
+		iter := assetClient.ListAssets(ctx, &assetpb.ListAssetsRequest{
 			Parent:      fmt.Sprintf("projects/%s", projectID),
 			AssetTypes:  assetTypes,
 			ContentType: contentType,
 			ReadTime:    timestamppb.New(snapshotTime),
-			OutputConfig: &assetpb.OutputConfig{
-				Destination: &assetpb.OutputConfig_GcsDestination{
-					GcsDestination: &assetpb.GcsDestination{
-						ObjectUri: &assetpb.GcsDestination_Uri{
-							Uri: uri,
-						},
-					},
-				},
-			},
+			PageSize:    1000,
 		})
 
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(fmt.Sprintf("client.ExportAssets: %s", err)))
+		numMessages := 0
+		for {
+			asset, err := iter.Next()
+			if err != nil {
+				if err == iterator.Done {
+					break
+				}
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("iter.Next: %s", err)))
+				return
+			}
+			assetBytes, err := json.Marshal(asset)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("json.Marshal: %s", err)))
+				return
+			}
+
+			_ = topic.Publish(ctx, &pubsub.Message{
+				Data: []byte(assetBytes),
+				Attributes: map[string]string{
+					"snapshotTime": strconv.FormatInt(snapshotTime.UnixNano(), 10),
+				},
+			})
+			numMessages++
 		}
+		log.Printf("published %d messages asynchronously", numMessages)
 	}
 }
 
@@ -156,66 +146,6 @@ type GCSEvent struct {
 	Kind   string `json:"kind"`
 	Name   string `json:"name"`
 	Bucket string `json:"bucket"`
-}
-
-// ProcessExport is an event-trigger Cloud Function entrypoint. It responds to
-// the Google Cloud Storage "object.finalize" event by reading the newline-delimited JSON
-// in the Cloud Storage Object and writing it to the Pub/Sub topic with id "topicID".
-//
-// ProcessExport can be called multiple times for a single object, so duplicate events may
-// be written into the Pub/Sub topic.
-//
-// Lines longer than 65536 bytes are automatically split into separate pubsub events.
-func ProcessExport(ctx context.Context, e GCSEvent) error {
-	storageClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return fmt.Errorf("storage.NewClient: %w", err)
-	}
-	defer storageClient.Close()
-
-	pubsubClient, err := pubsub.NewClient(ctx, projectID)
-	if err != nil {
-		return fmt.Errorf("pubsub.NewClient: %w", err)
-	}
-	defer pubsubClient.Close()
-
-	bkt := storageClient.Bucket(e.Bucket)
-	obj := bkt.Object(e.Name)
-
-	log.Printf("processing file %s", e.Name)
-	log.Printf("Bucket Name %s", e.Bucket)
-
-	_, _, snapshotTime, err := parseObjectName(e.Name)
-
-	if err != nil {
-		return fmt.Errorf("parseObjectName: %w", err)
-	}
-
-	r, err := obj.NewReader(ctx)
-	if err != nil {
-		return fmt.Errorf("obj.NewReader: %w", err)
-	}
-
-	topic := pubsubClient.Topic(topicID)
-	defer topic.Stop()
-
-	numLines := 0
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		line := scanner.Text()
-		numLines++
-
-		_ = topic.Publish(ctx, &pubsub.Message{
-			Data: []byte(line),
-			Attributes: map[string]string{
-				"snapshotTime": strconv.FormatInt(snapshotTime.UnixNano(), 10),
-			},
-		})
-	}
-	log.Printf("published %d messages asynchronously", numLines)
-	topic.Flush()
-
-	return nil
 }
 
 // ManageFeeds is a Cloud Function event-trigger entrypoint.
