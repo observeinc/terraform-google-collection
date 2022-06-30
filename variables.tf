@@ -96,13 +96,19 @@ variable "pubsub_maximum_backoff" {
 }
 
 variable "cloud_function_max_instances" {
-  description = "Max number of instances per Cloud Function (https://cloud.google.com/functions/docs/configuring/max-instances)"
+  description = "Max number of instances for each Cloud Function (https://cloud.google.com/functions/docs/configuring/max-instances)"
   type        = number
   default     = 5
 }
 
-variable "storage_retention_in_days" {
-  description = "How long to retain files in the Cloud Storage bucket"
+variable "cloud_function_timeout" {
+  description = "Timeout in seconds for each Cloud Function"
   type        = number
-  default     = 7
+  default     = 300
+}
+
+variable "cloud_function_memory" {
+  description = "Memory in megabytes for each Cloud Function"
+  type        = number
+  default     = 256
 }
