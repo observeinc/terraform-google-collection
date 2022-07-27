@@ -9,8 +9,8 @@ output "region" {
 }
 
 output "subscription" {
+  value       = { for key, value in google_pubsub_subscription.this : key => value }
   description = "The Pub/Sub subscription created by this module."
-  value       = google_pubsub_subscription.this
 }
 
 output "service_account_key" {

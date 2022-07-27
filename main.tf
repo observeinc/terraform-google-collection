@@ -10,6 +10,8 @@ locals {
     "ASSET_TYPES"   = jsonencode(var.asset_types)
     "CONTENT_TYPES" = jsonencode(var.asset_content_types)
   }
+
+  pubsub_subscriptions = var.pubsub_subscriptions == null ? { "${var.name}" = { create = true } } : var.pubsub_subscriptions
 }
 
 data "google_client_config" "this" {}
@@ -24,9 +26,10 @@ resource "google_pubsub_topic" "this" {
 }
 
 resource "google_pubsub_subscription" "this" {
-  name   = var.name
-  labels = var.labels
-  topic  = google_pubsub_topic.this.name
+  for_each = { for key, value in local.pubsub_subscriptions : key => value if value.create == true }
+  name     = each.key
+  labels   = var.labels
+  topic    = google_pubsub_topic.this.name
 
   ack_deadline_seconds       = var.pubsub_ack_deadline_seconds
   message_retention_duration = var.pubsub_message_retention_duration
@@ -90,7 +93,7 @@ resource "google_storage_bucket" "function_code" {
 data "archive_file" "function_code" {
   type        = "zip"
   source_dir  = "${path.module}/cloudfunctions/"
-  output_path = "${path.module}/cloudfunctions.zip"
+  output_path = "${path.module}/arthurcloudfunctions.zip"
 }
 
 resource "google_storage_bucket_object" "function_code" {

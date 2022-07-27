@@ -112,3 +112,11 @@ variable "cloud_function_memory" {
   type        = number
   default     = 256
 }
+
+
+
+variable "pubsub_subscriptions" {
+  description = "Variable for creating multiple subscriptions for pubsub pollers to avoid missing data"
+  type        = map(any)
+  default     = null
+}
