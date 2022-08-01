@@ -9,6 +9,12 @@ variable "name" {
   }
 }
 
+variable "region" {
+  type        = string
+  description = "GCP region to install resources in. If not set, the region of the google provider is used."
+  default     = ""
+}
+
 variable "labels" {
   description = <<-EOF
     A map of labels to add to resources (https://cloud.google.com/resource-manager/docs/creating-managing-labels)"

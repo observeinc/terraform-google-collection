@@ -1,6 +1,6 @@
 locals {
   project = data.google_client_config.this.project
-  region  = data.google_client_config.this.region
+  region  = var.region != "" ? var.region : data.google_client_config.this.region
 
   function_env_vars = {
     "NAME"       = var.name
@@ -21,6 +21,8 @@ resource "google_pubsub_topic" "this" {
   message_storage_policy {
     allowed_persistence_regions = [local.region]
   }
+
+  project = local.project
 }
 
 resource "google_pubsub_subscription" "this" {
@@ -121,6 +123,8 @@ resource "google_cloudfunctions_function" "export" {
   max_instances       = var.cloud_function_max_instances
   timeout             = var.cloud_function_timeout
   available_memory_mb = var.cloud_function_memory
+
+  region = local.region
 }
 
 resource "google_service_account" "cloud_scheduler" {
@@ -148,6 +152,8 @@ resource "google_cloud_scheduler_job" "this" {
       service_account_email = google_service_account.cloud_scheduler.email
     }
   }
+
+  region = local.region
 }
 
 resource "google_service_account" "poller" {
@@ -203,6 +209,8 @@ resource "google_cloudfunctions_function" "feed_management" {
   max_instances         = var.cloud_function_max_instances
   timeout               = var.cloud_function_timeout
   available_memory_mb   = var.cloud_function_memory
+
+  region = local.region
 }
 
 

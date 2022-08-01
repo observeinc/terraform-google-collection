@@ -85,6 +85,7 @@ No modules.
 | <a name="input_pubsub_maximum_backoff"></a> [pubsub\_maximum\_backoff](#input\_pubsub\_maximum\_backoff) | Retry policy maximum backoff for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions) | `string` | `"600s"` | no |
 | <a name="input_pubsub_message_retention_duration"></a> [pubsub\_message\_retention\_duration](#input\_pubsub\_message\_retention\_duration) | Message retention for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions) | `string` | `"86400s"` | no |
 | <a name="input_pubsub_minimum_backoff"></a> [pubsub\_minimum\_backoff](#input\_pubsub\_minimum\_backoff) | Retry policy minimum backoff for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions) | `string` | `"10s"` | no |
+| <a name="input_region"></a> [region](#input\_region) | GCP region to install resources in. If not set, the region of the google provider is used. | `string` | `""` | no |
 
 ## Outputs
 
