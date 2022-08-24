@@ -6,18 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	asset "cloud.google.com/go/asset/apiv1"
 	"cloud.google.com/go/functions/metadata"
-	"cloud.google.com/go/pubsub"
-	"google.golang.org/api/iterator"
 	assetpb "google.golang.org/genproto/googleapis/cloud/asset/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -72,74 +67,6 @@ func getEnvVars() error {
 		}
 	}
 	return nil
-}
-
-// Export lists all Cloud Assets and writes them to Pub/Sub
-//
-// Originally this was done with ExportAssets but there the rate limit of 6,000 requests per day that affected development
-func Export(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	assetClient, err := asset.NewClient(ctx)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("asset.NewClient: %s", err)))
-		return
-	}
-	defer assetClient.Close()
-
-	pubsubClient, err := pubsub.NewClient(ctx, projectID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("pubsub.NewClient: %s", err)))
-		return
-	}
-	defer pubsubClient.Close()
-
-	topic := pubsubClient.Topic(topicID)
-	defer topic.Stop()
-
-	for _, contentType := range contentTypes {
-		// Set snapshotTime to 1 minute ago because of the following issue:
-		// "Due to delays in resource data collection and indexing, there is a volatile window during which running the same query may get different results."
-		snapshotTime := time.Now().Add(-time.Minute)
-		log.Printf("listing exports for content type %s", assetpb.ContentType_name[int32(contentType)])
-
-		iter := assetClient.ListAssets(ctx, &assetpb.ListAssetsRequest{
-			Parent:      fmt.Sprintf("projects/%s", projectID),
-			AssetTypes:  assetTypes,
-			ContentType: contentType,
-			ReadTime:    timestamppb.New(snapshotTime),
-			PageSize:    1000,
-		})
-
-		numMessages := 0
-		for {
-			asset, err := iter.Next()
-			if err != nil {
-				if err == iterator.Done {
-					break
-				}
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(fmt.Sprintf("iter.Next: %s", err)))
-				return
-			}
-			assetBytes, err := json.Marshal(asset)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(fmt.Sprintf("json.Marshal: %s", err)))
-				return
-			}
-
-			_ = topic.Publish(ctx, &pubsub.Message{
-				Data: []byte(assetBytes),
-				Attributes: map[string]string{
-					"snapshotTime": strconv.FormatInt(snapshotTime.UnixNano(), 10),
-				},
-			})
-			numMessages++
-		}
-		log.Printf("published %d messages asynchronously", numMessages)
-	}
 }
 
 type GCSEvent struct {
