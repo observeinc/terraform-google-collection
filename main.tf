@@ -1,6 +1,7 @@
 locals {
   project = data.google_client_config.this.project
   region  = data.google_client_config.this.region
+  org_id  = data.google_organization.org.org_id
 
   function_env_vars = {
     "NAME"       = var.name
@@ -73,11 +74,12 @@ resource "google_project_iam_member" "cloud_functions" {
     "roles/storage.objectViewer",
     "roles/pubsub.publisher",
   ])
-
   project = local.project
   role    = each.key
   member  = "serviceAccount:${google_service_account.cloud_functions.email}"
 }
+
+
 
 
 resource "google_storage_bucket" "function_code" {
@@ -180,13 +182,42 @@ resource "google_storage_bucket_object" "feed_management" {
   depends_on = [time_sleep.wait_object_notification]
 }
 
+
+data "google_organization" "org" {
+  domain = var.gcp_org_domain
+}
+
+resource "google_organization_iam_member" "organization" {
+  org_id  = local.org_id
+  role    = "roles/browser"
+  member  = "serviceAccount:${google_service_account.cloud_functions_project.email}"
+}
+
+
+resource "google_project_iam_member" "cloud_functions_project" {
+  for_each = toset([
+    "roles/cloudasset.owner",
+    "roles/storage.objectViewer",
+    "roles/pubsub.publisher",
+  ])
+  project = local.project
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.cloud_functions_project.email}"
+}
+
+
+resource "google_service_account" "cloud_functions_project" {
+  account_id  = "${var.name}-project-list-func"
+  description = "A service account for the Observe Cloud Function for listing all projects"
+}
+
 resource "google_cloudfunctions_function" "project_export" {
   name   = "${var.name}-project-export"
   labels = var.labels
 
   description = "List all Cloud Projects and write to Pub/Sub"
 
-  service_account_email = google_service_account.cloud_functions.email
+  service_account_email = google_service_account.cloud_functions_project.email
 
   runtime               = "go116"
   entry_point           = "ProjectExport"

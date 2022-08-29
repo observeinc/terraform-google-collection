@@ -112,3 +112,9 @@ variable "cloud_function_memory" {
   type        = number
   default     = 256
 }
+
+variable "gcp_org_domain" {
+  description = "Organization domain for GCP"
+  type        = string
+  default     = "observeinc.com"
+}
