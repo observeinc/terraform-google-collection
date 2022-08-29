@@ -213,6 +213,7 @@ func publishProjects(projResponse *cloudresourcemanager.ListProjectsResponse, ct
 	var results []*pubsub.PublishResult
 	for _, project := range projResponse.Projects {
 		snapshotTime := time.Now().Add(-time.Minute)
+
 		projLine, _ := project.MarshalJSON()
 		fmt.Println(string(projLine))
 
@@ -220,6 +221,7 @@ func publishProjects(projResponse *cloudresourcemanager.ListProjectsResponse, ct
 			Data: []byte(projLine),
 			Attributes: map[string]string{
 				"snapshotTime": strconv.FormatInt(snapshotTime.UnixNano(), 10),
+				"data_type":    "cloudresourcemanager.Project",
 			},
 		})
 
