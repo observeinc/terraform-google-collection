@@ -179,3 +179,53 @@ resource "google_storage_bucket_object" "feed_management" {
 
   depends_on = [time_sleep.wait_object_notification]
 }
+
+resource "google_cloudfunctions_function" "project_export" {
+  name   = "${var.name}-project-export"
+  labels = var.labels
+
+  description = "List all Cloud Projects and write to Pub/Sub"
+
+  service_account_email = google_service_account.cloud_functions.email
+
+  runtime               = "go116"
+  entry_point           = "ProjectExport"
+  source_archive_bucket = google_storage_bucket.function_code.name
+  source_archive_object = google_storage_bucket_object.function_code.name
+
+  trigger_http     = true
+  ingress_settings = "ALLOW_ALL" # Needed so that Cloud Scheduler can trigger the Cloud Function
+
+  environment_variables = local.function_env_vars
+
+  max_instances       = var.cloud_function_max_instances
+  timeout             = var.cloud_function_timeout
+  available_memory_mb = var.cloud_function_memory
+}
+
+resource "google_service_account" "cloud_scheduler" {
+  account_id  = "${var.name}-sched"
+  description = "A service account to allow the Cloud Scheduler job to trigger a Cloud Function"
+}
+
+resource "google_project_iam_member" "cloud_scheduler_cloud_function_invoker" {
+  project = local.project
+  role    = "roles/cloudfunctions.invoker"
+  member  = "serviceAccount:${google_service_account.cloud_scheduler.email}"
+}
+
+resource "google_cloud_scheduler_job" "this" {
+  name        = var.name
+  description = "Trigger the Cloud Function that starts a Cloud Asset export routinely"
+  schedule    = "*/15  * * * *"
+
+
+  http_target {
+    http_method = "POST"
+    uri         = google_cloudfunctions_function.project_export.https_trigger_url
+
+    oidc_token {
+      service_account_email = google_service_account.cloud_scheduler.email
+    }
+  }
+}

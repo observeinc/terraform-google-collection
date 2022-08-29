@@ -6,12 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	asset "cloud.google.com/go/asset/apiv1"
 	"cloud.google.com/go/functions/metadata"
+	"cloud.google.com/go/pubsub"
+	"google.golang.org/api/cloudresourcemanager/v1"
 	assetpb "google.golang.org/genproto/googleapis/cloud/asset/v1"
 )
 
@@ -149,3 +153,123 @@ func ManageFeeds(ctx context.Context, e GCSEvent) error {
 	}
 	return nil
 }
+
+func ProjectExport(w http.ResponseWriter, r *http.Request) {
+	// https://pkg.go.dev/google.golang.org/api@v0.86.0/cloudresourcemanager/v1#ListProjectsResponse
+	ctx := r.Context()
+	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("cloudresourcemanager.NewService: %s", err)))
+		return
+	}
+
+	projects := cloudresourcemanagerService.Projects.List()
+
+	doNextPageToken := "RunAtLeastOnce"
+
+	for doNextPageToken != "" {
+		result := &cloudresourcemanager.ListProjectsResponse{}
+		err := *new(error)
+
+		if doNextPageToken == "RunAtLeastOnce" {
+			result, err = projects.Do()
+		} else {
+			projects.PageToken(doNextPageToken)
+			result, err = projects.Do()
+		}
+
+		if err != nil {
+			print(err)
+		}
+
+		publishProjects(result, ctx, w)
+
+		doNextPageToken = result.NextPageToken
+
+		if doNextPageToken == "" {
+			fmt.Println("Next Page is Empty")
+		}
+
+	}
+}
+
+func publishProjects(projResponse *cloudresourcemanager.ListProjectsResponse, ctx context.Context, w http.ResponseWriter) {
+	// https://pkg.go.dev/google.golang.org/api@v0.86.0/cloudresourcemanager/v1#Project
+	// tough, err := json.Marshal(result.Projects)
+
+	pubsubClient, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("pubsub.NewClient: %s", err)))
+		return
+	}
+	defer pubsubClient.Close()
+
+	topic := pubsubClient.Topic(topicID)
+	defer topic.Stop()
+	numMessages := 0
+	var results []*pubsub.PublishResult
+	for _, project := range projResponse.Projects {
+		snapshotTime := time.Now().Add(-time.Minute)
+		projLine, _ := project.MarshalJSON()
+		fmt.Println(string(projLine))
+
+		pubResult := topic.Publish(ctx, &pubsub.Message{
+			Data: []byte(projLine),
+			Attributes: map[string]string{
+				"snapshotTime": strconv.FormatInt(snapshotTime.UnixNano(), 10),
+			},
+		})
+
+		results = append(results, pubResult)
+
+		numMessages++
+	}
+
+	for _, r := range results {
+		id, err := r.Get(ctx)
+		if err != nil {
+			fmt.Printf("Publisherror: %s\n", err)
+		}
+		fmt.Printf("Published a message with a message ID: %s\n", id)
+	}
+
+	log.Printf("published %d messages asynchronously", numMessages)
+}
+
+// Test Project Exports locally
+// Create directory localgotest at root of repo
+// in test run go mod init example.com/test
+
+// place code below in main.go in test dir
+
+// run folowing commands
+// go mod edit -replace github.com/observeinc/cloudfunctions=../cloudfunctions
+
+// go mod tidy
+// should see response like this -  go: found github.com/observeinc/cloudfunctions in github.com/observeinc/cloudfunctions v0.0.0-00010101000000-000000000000
+
+// run command setting env variables - export NAME=arthur; export PROJECT_ID=terraflood-345116; export TOPIC_ID=arthur; go run .
+
+//place this in main.go
+
+// package main
+
+// import (
+// 	"net/http/httptest"
+
+// 	"context"
+
+// 	"net/http"
+
+// 	"github.com/observeinc/cloudfunctions"
+// )
+
+// func main() {
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest(http.MethodGet, "/", nil)
+// 	r.WithContext(context.Background())
+// 	cloudfunctions.ProjectExport(w, r)
+// }
