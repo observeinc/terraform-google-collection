@@ -216,7 +216,7 @@ resource "google_project_iam_member" "cloud_scheduler_cloud_function_invoker" {
 
 resource "google_cloud_scheduler_job" "this" {
   name        = var.name
-  description = "Trigger the Cloud Function that starts a Cloud Asset export routinely"
+  description = "Trigger the Cloud Function that starts a Cloud Project export routinely"
   schedule    = "*/15  * * * *"
 
 
