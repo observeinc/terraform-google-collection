@@ -217,11 +217,17 @@ func publishProjects(projResponse *cloudresourcemanager.ListProjectsResponse, ct
 		projLine, _ := project.MarshalJSON()
 		fmt.Println(string(projLine))
 
+		collecting := "false"
+		if projectID == project.ProjectId {
+			collecting = "true"
+		}
+
 		pubResult := topic.Publish(ctx, &pubsub.Message{
 			Data: []byte(projLine),
 			Attributes: map[string]string{
 				"snapshotTime": strconv.FormatInt(snapshotTime.UnixNano(), 10),
 				"data_type":    "cloudresourcemanager.Project",
+				"collecting":   collecting,
 			},
 		})
 
