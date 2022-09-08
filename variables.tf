@@ -53,30 +53,6 @@ variable "logging_exclusions" {
   default = []
 }
 
-variable "asset_types" {
-  description = <<-EOF
-    A list of types of Cloud Asset assets that will be exported to Observe.
-
-    For example: "compute.googleapis.com/Disk". See https://cloud.google.com/asset-inventory/docs/supported-asset-types for a list of all supported asset types.
-
-    By default, all supported assets are fetched (https://cloud.google.com/asset-inventory/docs/supported-asset-types)
-  EOF
-  type        = list(string)
-  default     = [".*"]
-}
-
-variable "asset_content_types" {
-  description = <<-EOF
-    A list of types of Cloud Asset content types that will be exported to observe.
-
-    See https://cloud.google.com/asset-inventory/docs/reference/rest/v1p7beta1/TopLevel/exportAssets#ContentType for a description of possible content types.
-    Content type RELATIONSHIP is not supported.
-  EOF
-
-  type    = list(string)
-  default = ["RESOURCE", "IAM_POLICY", "ORG_POLICY", "ACCESS_POLICY"]
-}
-
 variable "pubsub_message_retention_duration" {
   description = "Message retention for the Pub/Sub subscription (https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions)"
   type        = string
@@ -95,20 +71,4 @@ variable "pubsub_maximum_backoff" {
   default     = "600s"
 }
 
-variable "cloud_function_max_instances" {
-  description = "Max number of instances for each Cloud Function (https://cloud.google.com/functions/docs/configuring/max-instances)"
-  type        = number
-  default     = 5
-}
 
-variable "cloud_function_timeout" {
-  description = "Timeout in seconds for each Cloud Function"
-  type        = number
-  default     = 300
-}
-
-variable "cloud_function_memory" {
-  description = "Memory in megabytes for each Cloud Function"
-  type        = number
-  default     = 256
-}
