@@ -1,3 +1,27 @@
+# Observe Google Collection
+
+This module creates a service account, log sink and pub/sub topic and subscription needed to facilitate the collection of asset inventory records, metrics and logs from GCP for a given project.
+
+## Usage
+
+```hcl
+provider "google" {}
+
+module "observe_gcp_collection" {
+  source           = "observeinc/collection/google"
+}
+
+output "subscription" {
+  description = "The Pub/Sub subscription created by this module."
+  value       = module.observe_gcp_collection.subscription
+}
+
+output "service_account_key" {
+  description = "A service account key to be passed to the pollers for Pub/Sub and Cloud Monitoring"
+  value       = base64decode(module.observe_gcp_collection.service_account_key)
+  sensitive   = true
+}
+```
 ## Requirements
 
 | Name | Version |
