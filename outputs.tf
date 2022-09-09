@@ -8,6 +8,11 @@ output "region" {
   value       = local.region
 }
 
+output "topic" {
+  description = "The Pub/Sub topic created by this module."
+  value       = google_pubsub_topic.this
+}
+
 output "subscription" {
   description = "The Pub/Sub subscription created by this module."
   value       = google_pubsub_subscription.this
