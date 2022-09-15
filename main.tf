@@ -63,6 +63,7 @@ resource "google_project_iam_member" "poller" {
     "roles/pubsub.subscriber",
     "roles/monitoring.viewer",
     "roles/cloudasset.viewer",
+     "roles/browser",
   ])
 
   project = local.project
