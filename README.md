@@ -5,7 +5,10 @@ This module creates a service account, log sink and pub/sub topic and subscripti
 ## Usage
 
 ```hcl
-provider "google" {}
+provider "google" {
+  project = "YOUR_PROJECT_ID"
+  region  = "YOUR_DEFAULT_REGION"
+}
 
 module "observe_gcp_collection" {
   source           = "observeinc/collection/google"
@@ -16,9 +19,9 @@ output "subscription" {
   value       = module.observe_gcp_collection.subscription
 }
 
-output "service_account_key" {
+output "service_account_private_key" {
   description = "A service account key to be passed to the pollers for Pub/Sub and Cloud Monitoring"
-  value       = base64decode(module.observe_gcp_collection.service_account_key)
+  value       = base64decode(module.observe_gcp_collection.service_account_key.private_key)
   sensitive   = true
 }
 ```
