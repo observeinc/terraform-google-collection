@@ -17,48 +17,33 @@ Observe pollers, and the Observe datasets.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.1 |
 | <a name="requirement_google"></a> [google](#requirement\_google) | >= 4.18.0 |
-| <a name="requirement_observe"></a> [observe](#requirement\_observe) | >= 0.5.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_observe"></a> [observe](#provider\_observe) | >= 0.5.0 |
+No providers.
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_google"></a> [google](#module\_google) | github.com/observeinc/terraform-observe-google | main |
-| <a name="module_observe_gcp_collection"></a> [observe\_gcp\_collection](#module\_observe\_gcp\_collection) | github.com/observeinc/terraform-google-collection | main |
+| <a name="module_observe_gcp_collection"></a> [observe\_gcp\_collection](#module\_observe\_gcp\_collection) | observeinc/collection/google | n/a |
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| observe_poller.gcp_metrics | resource |
-| observe_poller.pubsub_poller | resource |
-| observe_datastream.gcp | data source |
-| observe_workspace.default | data source |
+No resources.
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_exclude_metric_type_prefixes"></a> [exclude\_metric\_type\_prefixes](#input\_exclude\_metric\_type\_prefixes) | GCP metric endpoints to ignore. This takes precedence over include\_metric\_type\_prefixes | `list(any)` | <pre>[<br>  "aws.googleapis.com/"<br>]</pre> | no |
-| <a name="input_gcp_project"></a> [gcp\_project](#input\_gcp\_project) | GCP project | `string` | n/a | yes |
-| <a name="input_gcp_region"></a> [gcp\_region](#input\_gcp\_region) | GCP region | `string` | n/a | yes |
-| <a name="input_include_metric_type_prefixes"></a> [include\_metric\_type\_prefixes](#input\_include\_metric\_type\_prefixes) | GCP metric endpoints to pull data from | `list(any)` | <pre>[<br>  "logging.googleapis.com/",<br>  "iam.googleapis.com/",<br>  "monitoring.googleapis.com/",<br>  "pubsub.googleapis.com/",<br>  "storage.googleapis.com/"<br>]</pre> | no |
-| <a name="input_name"></a> [name](#input\_name) | Name | `string` | n/a | yes |
-| <a name="input_observe_customer"></a> [observe\_customer](#input\_observe\_customer) | Observe Customer ID | `string` | n/a | yes |
-| <a name="input_observe_domain"></a> [observe\_domain](#input\_observe\_domain) | Observe Domain | `string` | `"observeinc.com"` | no |
-| <a name="input_observe_services"></a> [observe\_services](#input\_observe\_services) | Map of services to create Observe datasets for.	See the services variable in https://github.com/observeinc/terraform-observe-google. | `map(bool)` | `{}` | no |
-| <a name="input_observe_token"></a> [observe\_token](#input\_observe\_token) | Observe token | `string` | n/a | yes |
-| <a name="input_observe_workspace"></a> [observe\_workspace](#input\_observe\_workspace) | Name of the workspace to create datasets for | `string` | `"Default"` | no |
+| <a name="input_name"></a> [name](#input\_name) | Name | `string` | `"dev"` | no |
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_service_account_private_key"></a> [service\_account\_private\_key](#output\_service\_account\_private\_key) | A service account key to be passed to the pollers for Pub/Sub and Cloud Monitoring |
+| <a name="output_subscription"></a> [subscription](#output\_subscription) | The Pub/Sub subscription created by this module. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -76,3 +76,4 @@ No modules.
 | <a name="output_region"></a> [region](#output\_region) | The region in which resources were created |
 | <a name="output_service_account_key"></a> [service\_account\_key](#output\_service\_account\_key) | A service account key to be passed to the pollers for Pub/Sub and Cloud Monitoring |
 | <a name="output_subscription"></a> [subscription](#output\_subscription) | The Pub/Sub subscription created by this module. |
+| <a name="output_topic"></a> [topic](#output\_topic) | The Pub/Sub topic created by this module. |
