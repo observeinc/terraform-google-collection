@@ -1,7 +1,7 @@
 # Full GCP Integration
 
 This configuration documents a method for setting up infrastructure on Google for use by 
-Observe pollers, and the Observe datasets.
+Observe pollers and the Observe datasets.
 
 ### Usage
 
