@@ -12,6 +12,7 @@ provider "google" {
 
 module "observe_gcp_collection" {
   source           = "observeinc/collection/google"
+  name             = "dev" 
 }
 
 output "subscription" {
