@@ -1,3 +1,12 @@
+## [0.1.2](https://github.com/observeinc/terraform-google-collection/compare/v0.1.1...v0.1.2) (2022-09-21)
+
+
+### Bug Fixes
+
+* update read me and examples ([#16](https://github.com/observeinc/terraform-google-collection/issues/16)) ([3660b4c](https://github.com/observeinc/terraform-google-collection/commit/3660b4cfa313d821ebce6c1fa8c50945ab0e6364))
+
+
+
 ## [0.1.1](https://github.com/observeinc/terraform-google-collection/compare/v0.1.0...v0.1.1) (2022-09-15)
 
 
