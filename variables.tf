@@ -71,4 +71,14 @@ variable "pubsub_maximum_backoff" {
   default     = "600s"
 }
 
+variable "project_id" {
+  description = "Project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "Region"
+  type        = string
+}
+
 
