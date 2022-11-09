@@ -32,3 +32,6 @@ override.tf.json
 .DS_Store
 tmp
 zipfiles
+virtual_env
+scratch.txt
+collection_extensions/src/__pycache__/

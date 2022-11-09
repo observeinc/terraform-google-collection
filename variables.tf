@@ -81,4 +81,10 @@ variable "region" {
   type        = string
 }
 
+variable "enable_extensions" {
+  description = "Whether to enable extensions submodule"
+  type = bool
+  default = true
+}
+
 

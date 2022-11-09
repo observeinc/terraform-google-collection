@@ -11,8 +11,9 @@ provider "google" {
 }
 
 module "observe_gcp_collection" {
-  source           = "observeinc/collection/google"
-  name             = "dev" 
+  source             = "observeinc/collection/google"
+  name              = "dev" 
+  enable_extensions = true
 }
 
 output "subscription" {

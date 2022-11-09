@@ -6,5 +6,6 @@ provider "google" {
 module "observe_gcp_collection" {
   source           = "observeinc/collection/google"
   name = var.name
+  enable_extensions = true
 }
 

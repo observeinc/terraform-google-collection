@@ -78,6 +78,7 @@ resource "google_service_account_key" "poller" {
 }
 
 module "extensions" {
+  count = var.enable_extensions == true ? 1 : 0
   source = "./collection_extensions/cloud_function_to_pubsub"
   project_id = var.project_id
   region = var.region
