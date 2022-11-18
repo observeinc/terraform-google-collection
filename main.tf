@@ -88,4 +88,5 @@ module "extensions" {
     "export-cloud-scheduler"
   ]
   src_path = "${path.module}/collection_extensions/src"
+  name_format = "${var.name}-%s"
 }
