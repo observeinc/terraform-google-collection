@@ -1,3 +1,17 @@
+# [0.2.0](https://github.com/observeinc/terraform-google-collection/compare/v0.1.2...v0.2.0) (2022-11-21)
+
+
+### Bug Fixes
+
+* pass name format ([#18](https://github.com/observeinc/terraform-google-collection/issues/18)) ([18444d9](https://github.com/observeinc/terraform-google-collection/commit/18444d995264ae9a6de529b118b609935739803f))
+
+
+### Features
+
+* add collection extension approach ([#17](https://github.com/observeinc/terraform-google-collection/issues/17)) ([04b20c2](https://github.com/observeinc/terraform-google-collection/commit/04b20c26ff8e744deeb571e2650d844a3b7e4027))
+
+
+
 ## [0.1.2](https://github.com/observeinc/terraform-google-collection/compare/v0.1.1...v0.1.2) (2022-09-21)
 
 
