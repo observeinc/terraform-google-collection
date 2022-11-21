@@ -3,6 +3,8 @@
 This configuration documents a method for setting up infrastructure on Google for use by 
 Observe pollers and the Observe datasets.
 
+The collection_extensions allow you to inject whatever custom information you want into your pub/sub topic via cloud functions triggered by events or cloud scheduler jobs.
+
 ### Usage
 
 1. Install gCloud CLI to create auth token for Terraform.
