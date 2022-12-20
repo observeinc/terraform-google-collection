@@ -1,5 +1,0 @@
-name             = "observe-google"
-observe_customer = "101"
-observe_token    = "asdfsadfasfsdaasdfsafas"
-gcp_project      = "my-project-id"
-gcp_region       = "us-west2"

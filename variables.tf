@@ -9,6 +9,28 @@ variable "name" {
   }
 }
 
+variable "resource" {
+  description = <<-EOF
+    The identifier of the GCP Resource to monitor.
+
+    The resource can be a project, folder, or organization.
+
+    Examples: "projects/my_project-123", "folders/1234567899", "organizations/34739118321"
+  EOF
+  type        = string
+
+
+  validation {
+    condition     = length(split("/", var.resource)) == 2
+    error_message = "The resource value must be formatted as <type>/<id>."
+  }
+
+  validation {
+    condition     = contains(["projects", "folders", "organizations"], split("/", var.resource)[0])
+    error_message = "The resource should have prefix 'projects/', 'folders/' or 'organizations/'."
+  }
+}
+
 variable "labels" {
   description = <<-EOF
     A map of labels to add to resources (https://cloud.google.com/resource-manager/docs/creating-managing-labels)"
@@ -71,20 +93,78 @@ variable "pubsub_maximum_backoff" {
   default     = "600s"
 }
 
-variable "project_id" {
-  description = "Project ID"
+variable "function_roles" {
+  description = <<-EOF
+    A list of IAM roles to give the Cloud Function.
+  EOF
+  type        = set(string)
+
+  default = [
+    "roles/compute.viewer",
+    "roles/iam.serviceAccountViewer",
+    "roles/cloudscheduler.viewer",
+    "roles/cloudasset.viewer",
+    "roles/browser", # for viewing projects
+  ]
+}
+
+variable "enable_function" {
+  description = "Whether to enable the Cloud function"
+  type        = bool
+  default     = true
+}
+
+variable "function_bucket" {
+  description = "GCS bucket containing the Cloud Function source code"
   type        = string
+  default     = "observeinc"
 }
 
-variable "region" {
-  description = "Region"
+variable "function_object" {
+  description = "GCS object key of the Cloud Function source code zip file"
   type        = string
+  default     = "google-cloud-functions-v0.1.0.zip"
 }
 
-variable "enable_extensions" {
-  description = "Whether to enable extensions submodule"
-  type = bool
-  default = true
+variable "function_schedule" {
+  description = <<-EOF
+    How often to trigger the cloud function. This is a Cloud Scheduler Job schedule:
+    https://cloud.google.com/scheduler/docs/reference/rest/v1/projects.locations.jobs#Job
+  EOF
+  type        = string
+  default     = "*/5  * * * *"
 }
 
 
+variable "function_available_memory_mb" {
+  description = "Memory (in MB), available to the function. Default value is 256. Possible values include 128, 256, 512, 1024, etc."
+  type        = number
+  default     = 256
+}
+
+variable "function_timeout" {
+  description = <<-EOF
+    Timeout (in seconds) for the function. Default value is 60 seconds. Cannot be more than 540 seconds.
+  EOF
+  type        = number
+  default     = 60
+}
+
+variable "function_max_instances" {
+  description = "The limit on the maximum number of function instances that may coexist at a given time."
+  type        = number
+  default     = null
+}
+
+variable "poller_roles" {
+  description = <<-EOF
+    A list of IAM roles to give the Observe poller (through the service account key output).
+  EOF
+  type        = set(string)
+
+  default = [
+    "roles/monitoring.viewer",
+    "roles/cloudasset.viewer",
+    "roles/browser",
+  ]
+}
