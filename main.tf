@@ -1,23 +1,28 @@
 locals {
-  project = var.project_id
-  region  = var.region
+  resource_type = split("/", var.resource)[0]
+  resource_id   = split("/", var.resource)[1]
+
+  writer_identity = (
+    local.resource_type == "projects" ?
+    google_logging_project_sink.this[0].writer_identity : (
+      local.resource_type == "folders" ?
+      google_logging_folder_sink.this[0].writer_identity :
+      google_logging_organization_sink.this[0].writer_identity
+    )
+  )
 }
 
-resource "google_pubsub_topic" "this" {
-  project = var.project_id
-  name    = var.name
-  labels  = var.labels
+data "google_project" "this" {}
 
-  message_storage_policy {
-    allowed_persistence_regions = [local.region]
-  }
+resource "google_pubsub_topic" "this" {
+  name   = var.name
+  labels = var.labels
 }
 
 resource "google_pubsub_subscription" "this" {
-  project = var.project_id
-  name    = var.name
-  labels  = var.labels
-  topic   = google_pubsub_topic.this.name
+  name   = var.name
+  labels = var.labels
+  topic  = google_pubsub_topic.this.name
 
   ack_deadline_seconds       = var.pubsub_ack_deadline_seconds
   message_retention_duration = var.pubsub_message_retention_duration
@@ -28,13 +33,13 @@ resource "google_pubsub_subscription" "this" {
 }
 
 resource "google_logging_project_sink" "this" {
-  project                = var.project_id
-  name                   = var.name
-  destination            = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
-  unique_writer_identity = true
-  filter                 = var.logging_filter
+  count       = local.resource_type == "projects" ? 1 : 0
+  name        = var.name
+  project     = local.resource_id
+  destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
+  filter      = var.logging_filter
 
-  description = "Export logs to the Observe PubSub topic"
+  description = "Exports logs to the Observe Pub/Sub topic"
 
   dynamic "exclusions" {
     for_each = var.logging_exclusions
@@ -47,46 +52,76 @@ resource "google_logging_project_sink" "this" {
   }
 }
 
+resource "google_logging_folder_sink" "this" {
+  count = local.resource_type == "folders" ? 1 : 0
+
+  name        = var.name
+  folder      = local.resource_id
+  destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
+  filter      = var.logging_filter
+
+  description = "Exports logs to the Observe Pub/Sub topic"
+
+  dynamic "exclusions" {
+    for_each = var.logging_exclusions
+    content {
+      name        = exclusions.name
+      description = exclusions.description
+      filter      = exclusions.filter
+      disabled    = exclusions.disabled
+    }
+  }
+}
+
+
+resource "google_logging_organization_sink" "this" {
+  count = local.resource_type == "organizations" ? 1 : 0
+
+  name        = var.name
+  org_id      = local.resource_id
+  destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
+  filter      = var.logging_filter
+
+  description = "Exports logs to the Observe Pub/Sub topic"
+
+  dynamic "exclusions" {
+    for_each = var.logging_exclusions
+    content {
+      name        = exclusions.name
+      description = exclusions.description
+      filter      = exclusions.filter
+      disabled    = exclusions.disabled
+    }
+  }
+}
+
+
+
 resource "google_pubsub_topic_iam_member" "sink_pubsub" {
-  project = google_pubsub_topic.this.project
-  topic   = google_pubsub_topic.this.name
-  role    = "roles/pubsub.publisher"
-  member  = google_logging_project_sink.this.writer_identity
+  topic  = google_pubsub_topic.this.name
+  role   = "roles/pubsub.publisher"
+  member = local.writer_identity
 }
 
 resource "google_service_account" "poller" {
-  project     = var.project_id
   account_id  = "${var.name}-poll"
   description = "A service account for the Observe Pub/Sub and Logging pollers"
 }
 
-resource "google_project_iam_member" "poller" {
-  for_each = toset([
-    "roles/pubsub.subscriber",
-    "roles/monitoring.viewer",
-    "roles/cloudasset.viewer",
-    "roles/browser",
-  ])
+resource "google_pubsub_subscription_iam_member" "poller_pubsub" {
+  subscription = google_pubsub_subscription.this.name
+  role         = "roles/pubsub.subscriber"
+  member       = "serviceAccount:${google_service_account.poller.email}"
+}
 
-  project = local.project
+resource "google_project_iam_member" "poller" {
+  for_each = var.poller_roles
+
+  project = data.google_project.this.project_id
   role    = each.key
   member  = "serviceAccount:${google_service_account.poller.email}"
 }
 
 resource "google_service_account_key" "poller" {
   service_account_id = google_service_account.poller.name
-}
-
-module "extensions" {
-  count = var.enable_extensions == true ? 1 : 0
-  source = "./collection_extensions/cloud_function_to_pubsub"
-  project_id = var.project_id
-  region = var.region
-  extensions_to_include = [
-    "export-instance-groups",
-    "export-service-accounts",
-    "export-cloud-scheduler"
-  ]
-  src_path = "${path.module}/collection_extensions/src"
-  name_format = "${var.name}-%s"
 }

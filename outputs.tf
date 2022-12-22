@@ -1,11 +1,6 @@
 output "project" {
   description = "The ID of the Project in which resources were created"
-  value       = local.project
-}
-
-output "region" {
-  description = "The region in which resources were created"
-  value       = local.region
+  value       = data.google_project.this.project_id
 }
 
 output "topic" {
