@@ -1,3 +1,6 @@
+# If updating this module, also update https://github.com/observeinc/deploymentmanager-google-collection
+# The 2 modules should contain same stuff.
+
 locals {
   resource_type = split("/", var.resource)[0]
   resource_id   = split("/", var.resource)[1]
