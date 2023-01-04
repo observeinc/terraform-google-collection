@@ -153,7 +153,7 @@ variable "function_timeout" {
 variable "function_max_instances" {
   description = "The limit on the maximum number of function instances that may coexist at a given time."
   type        = number
-  default     = null
+  default     = 5
 }
 
 variable "poller_roles" {
