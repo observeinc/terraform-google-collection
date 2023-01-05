@@ -132,7 +132,7 @@ variable "function_schedule" {
     https://cloud.google.com/scheduler/docs/reference/rest/v1/projects.locations.jobs#Job
   EOF
   type        = string
-  default     = "*/5  * * * *"
+  default     = "*/15  * * * *"
 }
 
 
@@ -147,7 +147,7 @@ variable "function_timeout" {
     Timeout (in seconds) for the function. Default value is 60 seconds. Cannot be more than 540 seconds.
   EOF
   type        = number
-  default     = 60
+  default     = 300
 }
 
 variable "function_max_instances" {
