@@ -2,7 +2,7 @@
 
 This module creates a log sink, pub/sub topic, and pub/sub subscription needed to
 facilitate the collection of asset inventory records, metrics and logs from GCP for a
-given project, folder, or organization.
+given project.
 
 This module also creates a Cloud Function to fetch some data through the GCP REST API.
 
@@ -23,7 +23,7 @@ module "observe_gcp_collection" {
   source  = "observeinc/collection/google"
   name    = "observe"
 
-  resource = "organizations/YOUR_ORGANIZATION_ID"
+  resource = "projects/YOUR_PROJECT_ID"
 }
 
 output "project" {
