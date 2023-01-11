@@ -123,7 +123,7 @@ variable "function_bucket" {
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.1.0.zip"
+  default     = "google-cloud-functions-v0.2.0.zip"
 }
 
 variable "function_schedule" {
@@ -156,6 +156,12 @@ variable "function_max_instances" {
   default     = 5
 }
 
+variable "function_disable_logging" {
+  description = "Whether to disable function logging"
+  type        = bool
+  default     = false
+}
+
 variable "poller_roles" {
   description = <<-EOF
     A list of IAM roles to give the Observe poller (through the service account key output).
@@ -164,7 +170,5 @@ variable "poller_roles" {
 
   default = [
     "roles/monitoring.viewer",
-    "roles/cloudasset.viewer",
-    "roles/browser",
   ]
 }
