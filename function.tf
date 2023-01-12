@@ -46,10 +46,11 @@ resource "google_cloudfunctions_function" "this" {
   service_account_email = google_service_account.cloudfunction[0].email
 
   runtime = "python310"
-  environment_variables = {
+  environment_variables = merge({
     "PARENT"   = var.resource
     "TOPIC_ID" = google_pubsub_topic.this.id
-  }
+    "VERSION"  = "${var.function_bucket}/${var.function_object}"
+  }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
   ingress_settings = "ALLOW_ALL" # Needed for Cloud Scheduler to work
