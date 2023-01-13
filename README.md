@@ -31,6 +31,7 @@ output "project" {
   value       = module.observe_gcp_collection.project
 }
 
+# To extract correct value - terraform output -json | jq -r '.subscription.value.name' 
 output "subscription" {
   description = "The Pub/Sub subscription created by this module (to be passed to the Pub/Sub poller)"
   value       = module.observe_gcp_collection.subscription
