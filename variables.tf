@@ -139,7 +139,7 @@ variable "function_schedule" {
 variable "function_available_memory_mb" {
   description = "Memory (in MB), available to the function. Default value is 256. Possible values include 128, 256, 512, 1024, etc."
   type        = number
-  default     = 256
+  default     = 512
 }
 
 variable "function_timeout" {
