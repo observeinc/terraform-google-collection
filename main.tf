@@ -58,10 +58,11 @@ resource "google_logging_project_sink" "this" {
 resource "google_logging_folder_sink" "this" {
   count = local.resource_type == "folders" ? 1 : 0
 
-  name        = var.name
-  folder      = local.resource_id
-  destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
-  filter      = var.logging_filter
+  name             = var.name
+  folder           = local.resource_id
+  destination      = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
+  filter           = var.logging_filter
+  include_children = var.folder_include_children
 
   description = "Exports logs to the Observe Pub/Sub topic"
 

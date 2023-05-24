@@ -104,12 +104,20 @@ variable "function_roles" {
     "roles/iam.serviceAccountViewer",
     "roles/cloudscheduler.viewer",
     "roles/cloudasset.viewer",
-    "roles/browser", # for viewing projects
+    "roles/browser",
+    "roles/logging.viewer",
+    "roles/monitoring.viewer" # for viewing projects
   ]
 }
 
 variable "enable_function" {
   description = "Whether to enable the Cloud function"
+  type        = bool
+  default     = true
+}
+
+variable "folder_include_children" {
+  description = "Whether to include all children Projects of a Folder when collecting logs"
   type        = bool
   default     = true
 }
@@ -135,7 +143,6 @@ variable "function_schedule" {
   default     = "*/15  * * * *"
 }
 
-
 variable "function_available_memory_mb" {
   description = "Memory (in MB), available to the function. Default value is 512. Possible values include 128, 256, 512, 1024, etc."
   type        = number
@@ -144,7 +151,7 @@ variable "function_available_memory_mb" {
 
 variable "function_timeout" {
   description = <<-EOF
-    Timeout (in seconds) for the function. Default value is 60 seconds. Cannot be more than 540 seconds.
+    Timeout (in seconds) for the function. Default value is 300 seconds. Cannot be more than 540 seconds.
   EOF
   type        = number
   default     = 300
@@ -157,7 +164,7 @@ variable "function_max_instances" {
 }
 
 variable "function_disable_logging" {
-  description = "Whether to disable function logging"
+  description = "Whether to disable function logging."
   type        = bool
   default     = false
 }
