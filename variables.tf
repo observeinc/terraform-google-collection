@@ -134,13 +134,15 @@ variable "function_object" {
   default     = "google-cloud-functions-v0.2.0.zip"
 }
 
-variable "function_schedule" {
-  description = <<-EOF
-    How often to trigger the cloud function. This is a Cloud Scheduler Job schedule:
-    https://cloud.google.com/scheduler/docs/reference/rest/v1/projects.locations.jobs#Job
-  EOF
-  type        = string
-  default     = "*/15  * * * *"
+variable "content_types" {
+  description = "List of asset content types"
+  type        = map(string)
+  default     = {
+    "RESOURCE"     = "0/15",
+    "IAM_POLICY"   = "2/15",
+    "ORG_POLICY"   = "4/15",
+    "ACCESS_POLICY" = "8/15"
+  }
 }
 
 variable "function_available_memory_mb" {

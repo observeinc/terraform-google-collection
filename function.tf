@@ -83,15 +83,16 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
-  count = var.enable_function ? 1 : 0
+  for_each = var.enable_function ? var.content_types : {}
 
-  name        = var.name
-  description = "Triggers the Cloud Function"
-  schedule    = var.function_schedule
+  name        = "${var.name}-${each.key}"
+  description = "Triggers the Cloud Function for ${each.key}"
+  schedule    = "${each.value} * * * *"
 
   http_target {
     http_method = "POST"
     uri         = google_cloudfunctions_function.this[0].https_trigger_url
+    body        = base64encode(jsonencode({"content_type" = each.key}))
 
     oidc_token {
       service_account_email = google_service_account.cloud_scheduler[0].email
