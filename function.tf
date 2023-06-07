@@ -39,17 +39,18 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 }
 
 resource "google_cloudfunctions_function" "this" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_function ? 2 : 0
 
-  name                  = var.name
+  name                  = "${var.name}-${count.index}"
   description           = "Polls data from the Google Cloud API and sends to the Observe Pub/Sub topic."
   service_account_email = google_service_account.cloudfunction[0].email
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"   = var.resource
-    "TOPIC_ID" = google_pubsub_topic.this.id
-    "VERSION"  = "${var.function_bucket}/${var.function_object}"
+    "PARENT"       = var.resource
+    "TOPIC_ID"     = google_pubsub_topic.this.id
+    "VERSION"      = "${var.function_bucket}/${var.function_object}"
+    "SERVICE_NAME" = count.index == 0 ? "cloud_function_asset_collection_main" : "cloud_function_asset_collection_project_main"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
@@ -61,7 +62,7 @@ resource "google_cloudfunctions_function" "this" {
 
   source_archive_bucket = var.function_bucket
   source_archive_object = var.function_object
-  entry_point           = "main"
+  entry_point           = count.index == 0 ? "main" : "project_main"
 
   labels = var.labels
 }
@@ -75,23 +76,23 @@ resource "google_service_account" "cloud_scheduler" {
 }
 
 resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_function ? 2 : 0
 
-  cloud_function = google_cloudfunctions_function.this[0].name
+  cloud_function = google_cloudfunctions_function.this[count.index].name
   role           = "roles/cloudfunctions.invoker"
   member         = "serviceAccount:${google_service_account.cloud_scheduler[0].email}"
 }
 
 resource "google_cloud_scheduler_job" "this" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_function ? 2 : 0
 
-  name        = var.name
+  name        = "${var.name}-${count.index}"
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule
 
   http_target {
     http_method = "POST"
-    uri         = google_cloudfunctions_function.this[0].https_trigger_url
+    uri         = google_cloudfunctions_function.this[count.index].https_trigger_url
 
     oidc_token {
       service_account_email = google_service_account.cloud_scheduler[0].email
