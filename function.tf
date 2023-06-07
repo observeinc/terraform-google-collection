@@ -47,9 +47,10 @@ resource "google_cloudfunctions_function" "this" {
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"   = var.resource
-    "TOPIC_ID" = google_pubsub_topic.this.id
-    "VERSION"  = "${var.function_bucket}/${var.function_object}"
+    "PARENT"       = var.resource
+    "TOPIC_ID"     = google_pubsub_topic.this.id
+    "VERSION"      = "${var.function_bucket}/${var.function_object}"
+    "SERVICE_NAME" = "cloud_function_asset_collection_main"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
