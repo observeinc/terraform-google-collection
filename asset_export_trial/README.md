@@ -20,6 +20,11 @@ Create Feed
 python3 -c 'from main import sample_create_feed; sample_create_feed()'
 ```
 
+Parsing of the Bucket
+```
+python3 -c 'from main import list_blobs; list_blobs()'
+```
+
 ## Links we need
 
 [asset_service](https://cloud.google.com/python/docs/reference/cloudasset/latest/google.cloud.asset_v1.services.asset_service)
