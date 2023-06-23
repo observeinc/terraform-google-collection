@@ -77,7 +77,6 @@ resource "google_logging_folder_sink" "this" {
   }
 }
 
-
 resource "google_logging_organization_sink" "this" {
   count = local.resource_type == "organizations" ? 1 : 0
 
@@ -98,8 +97,6 @@ resource "google_logging_organization_sink" "this" {
     }
   }
 }
-
-
 
 resource "google_pubsub_topic_iam_member" "sink_pubsub" {
   topic  = google_pubsub_topic.this.name
