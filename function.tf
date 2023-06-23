@@ -163,10 +163,11 @@ resource "google_cloud_scheduler_job" "this" {
     http_method = "POST"
     uri         = google_cloudfunctions_function.this[0].https_trigger_url
 
-    body        = base64encode(jsonencode({
-      asset_types   = var.function_asset_types,
-      content_type  = var.function_content_types
-    }))
+    headers = {
+      Content-Type = "application/json"
+    }
+
+    body        = base64encode("{}")
 
     oidc_token {
       service_account_email = google_service_account.cloud_scheduler[0].email
