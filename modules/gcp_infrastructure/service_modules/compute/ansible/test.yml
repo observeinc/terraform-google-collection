@@ -1,0 +1,10 @@
+---
+- name: Let's copy our executable script to remote location, execute script and get result back.
+  remote_user: root
+  sudo: yes
+  hosts: crunchify-group
+  tasks:
+     - name: Transfer executable script script
+       copy: src=/opt/ashah/crunchify-script.sh dest=/opt/ashah mode=0777
+     - name: Execute the script
+       command: sh /opt/ashah/crunchify-script.sh

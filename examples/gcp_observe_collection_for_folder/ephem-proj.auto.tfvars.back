@@ -1,0 +1,3 @@
+project_id    = "service-proj-391021"
+name_format   = "service-proj-%s"
+folder_number = "12345678900"

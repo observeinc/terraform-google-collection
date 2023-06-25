@@ -1,0 +1,13 @@
+[Unit]
+Description=Flask api application
+After=network.target
+
+[Service]
+Environment="FLASK_APP=main.py"
+User=ubuntu
+WorkingDirectory=/home/ubuntu/flask
+ExecStart=flask -p 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

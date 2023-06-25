@@ -1,0 +1,5 @@
+name: monitoring poller
+description: Onboard metrics for a GCP project
+kind: poller
+requiredvariables:
+- datastream

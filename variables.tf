@@ -19,7 +19,6 @@ variable "resource" {
   EOF
   type        = string
 
-
   validation {
     condition     = length(split("/", var.resource)) == 2
     error_message = "The resource value must be formatted as <type>/<id>."
@@ -30,6 +29,11 @@ variable "resource" {
     error_message = "The resource should have prefix 'projects/', 'folders/' or 'organizations/'."
   }
 }
+
+# variable "project_id" {
+#   type        = string
+#   description = "GCP project to deploy sample env"
+# }
 
 variable "labels" {
   description = <<-EOF
@@ -106,7 +110,11 @@ variable "function_roles" {
     "roles/cloudasset.viewer",
     "roles/browser",
     "roles/logging.viewer",
-    "roles/monitoring.viewer" # for viewing projects
+    "roles/monitoring.viewer", # for viewing projects
+    "roles/storage.objectCreator",
+    "roles/storage.objectViewer",
+    "roles/storage.objectAdmin",
+    "roles/storage.admin"
   ]
 }
 
@@ -125,13 +133,13 @@ variable "folder_include_children" {
 variable "function_bucket" {
   description = "GCS bucket containing the Cloud Function source code"
   type        = string
-  default     = "observeinc"
+  default     = "observeinc-colin"
 }
 
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.2.0.zip"
+  default     = "google-cloud-functions-v0.3.0-alpha.7.zip"
 }
 
 variable "function_schedule" {
@@ -167,6 +175,18 @@ variable "function_disable_logging" {
   description = "Whether to disable function logging."
   type        = bool
   default     = false
+}
+
+variable "function_output_bucket" {
+  description = "The Google Cloud Storage (GCS) bucket where the function output will be stored."
+  type        = string
+  default     = "chutchinson-export-assets"
+}
+
+variable "function_schedule_frequency" {
+  description = "Cron schedule for the job"
+  type        = string
+  default     = "0 * * * *"
 }
 
 variable "poller_roles" {

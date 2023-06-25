@@ -1,6 +1,3 @@
-# If updating this module, also update https://github.com/observeinc/deploymentmanager-google-collection
-# The 2 modules should contain same stuff.
-
 locals {
   resource_type = split("/", var.resource)[0]
   resource_id   = split("/", var.resource)[1]
@@ -15,7 +12,13 @@ locals {
   )
 }
 
-data "google_project" "this" {}
+data "google_project" "this" {
+  project_id = local.resource_type == "projects" ? local.resource_id : null
+}
+
+data "google_folder" "this" {
+  folder = local.resource_type == "folders" ? local.resource_id : null
+}
 
 resource "google_pubsub_topic" "this" {
   name   = var.name
@@ -38,7 +41,7 @@ resource "google_pubsub_subscription" "this" {
 resource "google_logging_project_sink" "this" {
   count       = local.resource_type == "projects" ? 1 : 0
   name        = var.name
-  project     = local.resource_id
+  project     = data.google_project.this.project_id
   destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
   filter      = var.logging_filter
 
@@ -59,7 +62,7 @@ resource "google_logging_folder_sink" "this" {
   count = local.resource_type == "folders" ? 1 : 0
 
   name             = var.name
-  folder           = local.resource_id
+  folder           = data.google_folder.this.folder_id
   destination      = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
   filter           = var.logging_filter
   include_children = var.folder_include_children
@@ -76,7 +79,6 @@ resource "google_logging_folder_sink" "this" {
     }
   }
 }
-
 
 resource "google_logging_organization_sink" "this" {
   count = local.resource_type == "organizations" ? 1 : 0
@@ -98,8 +100,6 @@ resource "google_logging_organization_sink" "this" {
     }
   }
 }
-
-
 
 resource "google_pubsub_topic_iam_member" "sink_pubsub" {
   topic  = google_pubsub_topic.this.name
@@ -129,3 +129,23 @@ resource "google_project_iam_member" "poller" {
 resource "google_service_account_key" "poller" {
   service_account_id = google_service_account.poller.name
 }
+
+# Asset Feed Per Project
+
+# data "google_projects" "my_folder_projects" {
+#   count = local.resource_type == "folders" ? 1 : 0
+#   filter = "parent.id:${data.google_project.this.folder_id} lifecycleState:ACTIVE"
+# }
+
+# module "create_asset_feed_folder" {
+#   for_each = {
+#     for index, project in data.google_projects.my_folder_projects[0].projects :
+#     project.project_id => project if project.project_id != var.project_id
+#   }
+
+#   source = "./modules/gcp_asset_feed"
+#   project_id = each.value.project_id
+#   topic_id = google_pubsub_topic.this.id
+#   feed_name = google_pubsub_topic.this.name
+# }
+
