@@ -49,19 +49,6 @@ resource "google_storage_bucket" "this" {
   location = "US"
 }
 
-#resource "google_storage_notification" "bucket_notification" {
-#  bucket        = google_storage_bucket.this.name
-#  payload_format = "JSON_API_V1"
-#  event_types   = ["OBJECT_FINALIZE"]
-#  topic         = google_pubsub_topic.this.name
-#}
-
-#resource "google_pubsub_topic_iam_member" "topic" {
-#  topic  = google_pubsub_topic.this.name
-#  role   = "roles/pubsub.publisher"
-#  member = "serviceAccount:service-905791827358@gs-project-accounts.iam.gserviceaccount.com"
-#}
-
 resource "google_storage_bucket_iam_member" "bucket_iam" {
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectCreator"
