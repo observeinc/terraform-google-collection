@@ -5,12 +5,6 @@ resource "google_service_account" "cloudfunction" {
   description = "Used by the Observe Cloud Functions"
 }
 
-resource "google_project_iam_member" "asset_service_account_permissions" {
-  project = data.google_project.this.project_id
-  role    = "roles/storage.objectAdmin"
-  member  = "serviceAccount:service-${data.google_project.this.number}@gcp-sa-cloudasset.iam.gserviceaccount.com"
-}
-
 resource "google_project_iam_member" "cloudfunction" {
   for_each = var.enable_function && local.resource_type == "projects" ? var.function_roles : toset([])
 
@@ -47,6 +41,8 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 resource "google_storage_bucket" "this" {
   name     = "${var.name}-bucket"
   location = "US"
+
+  force_destroy = true
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
