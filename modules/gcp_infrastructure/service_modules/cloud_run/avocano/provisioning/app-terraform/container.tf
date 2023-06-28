@@ -1,0 +1,72 @@
+
+# Use the docker registry providers to get accurate latest image information
+# Allows Terraform to always update to the container image associated as "latest" without
+# locking to the literal string "latest". 
+# https://github.com/hashicorp/terraform-provider-google/issues/6706#issuecomment-657039775
+
+#
+# Images are built in /cloudbuild.yaml
+#
+
+# Registry
+data "google_client_config" "default" {}
+
+locals {
+  # these match the values in /provisioning/deploy.cloudbuild.yaml
+  gcr_hostname   = "gcr.io"
+  server_image   = var.service_name
+  client_image   = "client"
+  loadtest_image = "loadtest"
+  image_registry = "${local.gcr_hostname}/${var.project_id}"
+}
+
+
+# Authenticate to our container registry
+provider "docker" {
+  registry_auth {
+    address  = local.gcr_hostname
+    username = "oauth2accesstoken"
+    password = data.google_client_config.default.access_token
+  }
+}
+
+
+# Server
+# Establish image name
+data "docker_registry_image" "server" {
+  name = "${local.image_registry}/${local.server_image}"
+}
+
+# Get exact image information
+data "google_container_registry_image" "server" {
+  name    = local.server_image
+  project = var.project_id
+  digest  = data.docker_registry_image.server.sha256_digest
+}
+
+
+# Client
+# Establish image name
+data "docker_registry_image" "client" {
+  name = "${local.image_registry}/${local.client_image}"
+}
+
+# Get exact image information
+data "google_container_registry_image" "client" {
+  name    = local.client_image
+  project = var.project_id
+  digest  = data.docker_registry_image.client.sha256_digest
+}
+
+# Loadtest
+# Establish image name
+data "docker_registry_image" "loadtest" {
+  name = "${local.image_registry}/${local.loadtest_image}"
+}
+
+# Get exact image information
+data "google_container_registry_image" "loadtest" {
+  name    = local.loadtest_image
+  project = var.project_id
+  digest  = data.docker_registry_image.loadtest.sha256_digest
+}

@@ -1,0 +1,4 @@
+billing_account = "value"
+org_id          = "value"
+folder_id       = "value"
+project_id      = "value"
