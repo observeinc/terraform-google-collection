@@ -129,13 +129,13 @@ variable "folder_include_children" {
 variable "function_bucket" {
   description = "GCS bucket containing the Cloud Function source code"
   type        = string
-  default     = "observeinc-colin"
+  default     = "observeinc"
 }
 
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.3.0-alpha.7.zip"
+  default     = "google-cloud-functions-latest"
 }
 
 variable "function_schedule" {
