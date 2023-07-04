@@ -43,6 +43,9 @@ resource "google_storage_bucket" "this" {
   location = "US"
 
   force_destroy = true
+  # Since the bucket is just a temporary storage for asset export objects until 
+  # the function can process them, we want to implicitly delete any leftover objects
+  # if Terraform plans to remove the bucket
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
@@ -60,13 +63,13 @@ resource "google_cloudfunctions_function" "this" {
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"   = var.resource
-    "TOPIC_ID" = google_pubsub_topic.this.id
-    "VERSION"  = "${var.function_bucket}/${var.function_object}"
+    "PARENT"        = var.resource
+    "TOPIC_ID"      = google_pubsub_topic.this.id
+    "VERSION"       = "${var.function_bucket}/${var.function_object}"
     "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
-  trigger_http = true
+  trigger_http     = true
   ingress_settings = "ALLOW_ALL" # Needed for Cloud Scheduler to work
 
   available_memory_mb = var.function_available_memory_mb
@@ -89,9 +92,9 @@ resource "google_cloudfunctions_function" "gcs_function" {
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"   = var.resource
-    "TOPIC_ID" = google_pubsub_topic.this.id
-    "VERSION"  = "${var.function_bucket}/${var.function_object}"
+    "PARENT"        = var.resource
+    "TOPIC_ID"      = google_pubsub_topic.this.id
+    "VERSION"       = "${var.function_bucket}/${var.function_object}"
     "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
@@ -109,14 +112,14 @@ resource "google_cloudfunctions_function" "gcs_function" {
 
   source_archive_bucket = var.function_bucket
   source_archive_object = var.function_object
-  entry_point           = "gcs_to_pubsub"  # This should be the entry point of your Python function for GCS bucket events
+  entry_point           = "gcs_to_pubsub"
 
   labels = var.labels
 }
 
 resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
   count = var.enable_function ? 1 : 0
-  
+
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
@@ -150,7 +153,7 @@ resource "google_cloud_scheduler_job" "this" {
       Content-Type = "application/json"
     }
 
-    body        = base64encode("{}")
+    body = base64encode("{}")
 
     oidc_token {
       service_account_email = google_service_account.cloud_scheduler[0].email

@@ -138,15 +138,6 @@ variable "function_object" {
   default     = "google-cloud-functions-v0.3.0-alpha.8.zip"
 }
 
-variable "function_schedule" {
-  description = <<-EOF
-    How often to trigger the cloud function. This is a Cloud Scheduler Job schedule:
-    https://cloud.google.com/scheduler/docs/reference/rest/v1/projects.locations.jobs#Job
-  EOF
-  type        = string
-  default     = "*/15  * * * *"
-}
-
 variable "function_available_memory_mb" {
   description = "Memory (in MB), available to the function. Default value is 512. Possible values include 128, 256, 512, 1024, etc."
   type        = number
@@ -171,12 +162,6 @@ variable "function_disable_logging" {
   description = "Whether to disable function logging."
   type        = bool
   default     = false
-}
-
-variable "function_output_bucket" {
-  description = "The Google Cloud Storage (GCS) bucket where the function output will be stored."
-  type        = string
-  default     = "chutchinson-export-assets"
 }
 
 variable "function_schedule_frequency" {

@@ -17,7 +17,8 @@ data "google_project" "this" {
 }
 
 data "google_folder" "this" {
-  folder = local.resource_type == "folders" ? local.resource_id : null
+  count  = local.resource_type == "folders" ? 1 : 0
+  folder = local.resource_id
 }
 
 resource "google_pubsub_topic" "this" {
@@ -62,7 +63,7 @@ resource "google_logging_folder_sink" "this" {
   count = local.resource_type == "folders" ? 1 : 0
 
   name             = var.name
-  folder           = data.google_folder.this.folder_id
+  folder           = data.google_folder.this[0].folder_id
   destination      = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
   filter           = var.logging_filter
   include_children = var.folder_include_children
