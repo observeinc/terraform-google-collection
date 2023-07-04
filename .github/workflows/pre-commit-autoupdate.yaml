@@ -1,0 +1,14 @@
+name: Pre-commit auto-update
+
+on:
+  # every day at midnight
+  schedule:
+    - cron: "0 0 * * *"
+  # on demand
+  workflow_dispatch:
+
+jobs:
+  auto-update:
+    if: github.repository == 'observeinc/terraform-observe-example'
+    uses: observeinc/.github/.github/workflows/pre-commit-autoupdate.yaml@main
+    secrets: inherit
