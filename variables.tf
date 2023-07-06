@@ -180,3 +180,9 @@ variable "poller_roles" {
     "roles/monitoring.viewer",
   ]
 }
+
+variable "project_id" {
+  description = "Billing Project ID needed for asset feed."
+  type        = string
+  default     = null
+}
