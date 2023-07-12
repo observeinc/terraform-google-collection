@@ -39,7 +39,7 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 }
 
 resource "google_storage_bucket" "this" {
-  name     = "${var.name}-bucket"
+  name     = "${var.name}-${var.project_id}-bucket"
   location = "US"
 
   force_destroy = true
