@@ -6,4 +6,5 @@ module "observe_gcp_collection" {
   resource = var.resource
   project_id = var.project_id
   # log_level = "DEBUG"
+  function_max_instances = 50
 }
