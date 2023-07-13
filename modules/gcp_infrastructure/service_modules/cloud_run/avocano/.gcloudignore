@@ -1,0 +1,34 @@
+.git
+
+# provisioning/app-terraformterraform/.gitignore
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate*
+
+# client/.gitignore
+.firebaserc
+.firebase/
+.idea
+.vscode
+.DS_Store
+node_modules/
+npm-debug.log
+
+coverage/
+.tmp/
+_site/
+dist/
+out-tsc/
+
+storybook-static
+custom-elements.json
+
+# server/.gitignore
+venv/
+__pycache__/
+static/
+/media/
+.pytest_cache/
+
+.env
+db.sqlite3

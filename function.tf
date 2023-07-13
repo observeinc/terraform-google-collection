@@ -67,6 +67,7 @@ resource "google_cloudfunctions_function" "this" {
     "TOPIC_ID"      = google_pubsub_topic.this.id
     "VERSION"       = "${var.function_bucket}/${var.function_object}"
     "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
+    "LOG_LEVEL"     = var.log_level
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
@@ -96,6 +97,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
     "TOPIC_ID"      = google_pubsub_topic.this.id
     "VERSION"       = "${var.function_bucket}/${var.function_object}"
     "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
+    "LOG_LEVEL"     = var.log_level
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   event_trigger {
