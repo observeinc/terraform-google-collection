@@ -160,3 +160,61 @@ resource "google_cloud_scheduler_job" "this" {
     }
   }
 }
+
+resource "google_cloudfunctions_function" "rest_of_assets" {
+  count = var.enable_function ? 1 : 0
+
+  name                  = "${var.name}_rest_of_assets"
+  description           = "Testing this out"
+  service_account_email = google_service_account.cloudfunction[0].email
+
+  runtime = "python310"
+  environment_variables = merge({
+    "PARENT"        = var.resource
+    "TOPIC_ID"      = google_pubsub_topic.this.id
+    "VERSION"       = "${var.function_bucket}/${var.function_object}"
+    "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
+  }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
+
+  trigger_http     = true
+  ingress_settings = "ALLOW_ALL" # Needed for Cloud Scheduler to work
+
+  available_memory_mb = var.function_available_memory_mb
+  timeout             = var.function_timeout
+  max_instances       = var.function_max_instances
+
+  source_archive_bucket = var.function_bucket
+  source_archive_object = var.function_object
+  entry_point           = "rest_of_assets"
+
+  labels = var.labels
+}
+
+resource "google_cloud_scheduler_job" "rest_of_assets" {
+  name        = "${var.name}-more-assets-job"
+  description = "Triggers the rest of assets Cloud Function"
+  schedule    = var.function_schedule_frequency_rest_of_assets
+
+  http_target {
+    http_method = "POST"
+    uri         = google_cloudfunctions_function.rest_of_assets[0].https_trigger_url
+
+    headers = {
+      Content-Type = "application/json"
+    }
+
+    body = base64encode("{}")
+
+    oidc_token {
+      service_account_email = google_service_account.cloud_scheduler[0].email
+    }
+  }
+}
+
+resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_assets" {
+  count = var.enable_function ? 1 : 0
+
+  cloud_function = google_cloudfunctions_function.rest_of_assets[0].name
+  role           = "roles/cloudfunctions.invoker"
+  member         = "serviceAccount:${google_service_account.cloud_scheduler[0].email}"
+}

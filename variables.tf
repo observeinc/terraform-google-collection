@@ -135,7 +135,7 @@ variable "function_bucket" {
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.3.0-alpha.8.zip"
+  default     = "zippedfile.zip"
 }
 
 variable "function_available_memory_mb" {
@@ -169,6 +169,13 @@ variable "function_schedule_frequency" {
   type        = string
   default     = "0 * * * *"
 }
+
+variable "function_schedule_frequency_rest_of_assets" {
+  description = "Cron schedule for the job"
+  type        = string
+  default     = "*/5 * * * *"
+}
+
 
 variable "poller_roles" {
   description = <<-EOF
