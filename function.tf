@@ -165,7 +165,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
   count = var.enable_function ? 1 : 0
 
   name                  = "${var.name}_rest_of_assets"
-  description           = "Testing this out"
+  description           = "Function that collections assets not capture by asset feed or asset exports."
   service_account_email = google_service_account.cloudfunction[0].email
 
   runtime = "python310"
