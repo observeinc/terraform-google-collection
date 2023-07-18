@@ -155,7 +155,7 @@ variable "function_timeout" {
 variable "function_max_instances" {
   description = "The limit on the maximum number of function instances that may coexist at a given time."
   type        = number
-  default     = 5
+  default     = 100
 }
 
 variable "function_disable_logging" {
