@@ -110,7 +110,9 @@ variable "function_roles" {
     "roles/storage.objectCreator",
     "roles/storage.objectViewer",
     "roles/storage.objectAdmin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/cloudtasks.enqueuer",
+    "roles/cloudtasks.taskRunner"
   ]
 }
 
@@ -135,13 +137,13 @@ variable "function_bucket" {
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.3.0-alpha.15.zip"
+  default     = "google-cloud-functions-v0.3.0-alpha.25.zip"
 }
 
 variable "function_available_memory_mb" {
   description = "Memory (in MB), available to the function. Default value is 512. Possible values include 128, 256, 512, 1024, etc."
   type        = number
-  default     = 512
+  default     = 2048
 }
 
 variable "function_timeout" {
@@ -149,7 +151,7 @@ variable "function_timeout" {
     Timeout (in seconds) for the function. Default value is 300 seconds. Cannot be more than 540 seconds.
   EOF
   type        = number
-  default     = 300
+  default     = 540
 }
 
 variable "function_max_instances" {

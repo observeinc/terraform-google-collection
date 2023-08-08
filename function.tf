@@ -46,6 +46,15 @@ resource "google_storage_bucket" "this" {
   # Since the bucket is just a temporary storage for asset export objects until 
   # the function can process them, we want to implicitly delete any leftover objects
   # if Terraform plans to remove the bucket
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+    condition {
+      age = 1
+    }
+  }
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
@@ -102,7 +111,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
     event_type = "google.storage.object.finalize"
     resource   = google_storage_bucket.this.name
     failure_policy {
-      retry = false
+      retry = true
     }
   }
 

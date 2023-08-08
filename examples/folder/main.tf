@@ -20,10 +20,11 @@ resource "google_monitoring_monitored_project" "primary" {
 }
 
 module "observe_gcp_collection" {
-  #source = "../../"
-  source = "observeinc/collection/google"
+  source = "../../"
+  # source = "observeinc/collection/google"
 
   name     = var.name
   resource = var.resource
   project_id = var.project_id
+  function_max_instances = 22
 }
