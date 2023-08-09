@@ -106,11 +106,14 @@ variable "function_roles" {
     "roles/cloudasset.viewer",
     "roles/browser",
     "roles/logging.viewer",
-    "roles/monitoring.viewer", # for viewing projects
+    "roles/monitoring.viewer",
     "roles/storage.objectCreator",
     "roles/storage.objectViewer",
     "roles/storage.objectAdmin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/cloudfunctions.invoker",
+    "roles/cloudtasks.enqueuer",
+    "roles/iam.serviceAccountUser"
   ]
 }
 
