@@ -193,3 +193,27 @@ variable "project_id" {
   type        = string
   default     = null
 }
+
+variable "queue_location" {
+  description = "The location where the Task Queue will be created."
+  type        = string
+  default     = "us-central1"
+}
+
+variable "max_concurrent_dispatches" {
+  description = "The maximum number of tasks that can be dispatched concurrently."
+  type        = number
+  default     = 5
+}
+
+variable "max_dispatches_per_second" {
+  description = "The maximum rate at which tasks can be dispatched per second."
+  type        = number
+  default     = 1
+}
+
+variable "max_attempts" {
+  description = "The maximum number of retry attempts for a task in case of failure."
+  type        = number
+  default     = 3
+}

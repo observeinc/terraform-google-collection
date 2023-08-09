@@ -98,14 +98,6 @@ resource "google_cloudfunctions_function" "gcs_function" {
     "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
-  event_trigger {
-    event_type = "google.storage.object.finalize"
-    resource   = google_storage_bucket.this.name
-    failure_policy {
-      retry = false
-    }
-  }
-
   available_memory_mb = var.function_available_memory_mb
   timeout             = var.function_timeout
   max_instances       = var.function_max_instances
@@ -217,4 +209,18 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
   cloud_function = google_cloudfunctions_function.rest_of_assets[0].name
   role           = "roles/cloudfunctions.invoker"
   member         = "serviceAccount:${google_service_account.cloud_scheduler[0].email}"
+}
+
+resource "google_cloud_tasks_queue" "task_queue" {
+  name     = "${var.name}-task-queue"
+  location = var.queue_location
+
+  rate_limits {
+    max_concurrent_dispatches = var.max_concurrent_dispatches
+    max_dispatches_per_second = var.max_dispatches_per_second
+  }
+
+  retry_config {
+    max_attempts = var.max_attempts
+  }
 }
