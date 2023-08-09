@@ -194,7 +194,7 @@ variable "project_id" {
   default     = null
 }
 
-variable "queue_location" {
+variable "gcp_region" {
   description = "The location where the Task Queue will be created."
   type        = string
   default     = "us-central1"
@@ -216,4 +216,10 @@ variable "max_attempts" {
   description = "The maximum number of retry attempts for a task in case of failure."
   type        = number
   default     = 3
+}
+
+variable "cloud_function_debug_level" {
+  description = "The debug level for the GCP cloud functions"
+  type        = string
+  default     = "WARNING"
 }

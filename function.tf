@@ -63,10 +63,14 @@ resource "google_cloudfunctions_function" "this" {
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"        = var.resource
-    "TOPIC_ID"      = google_pubsub_topic.this.id
-    "VERSION"       = "${var.function_bucket}/${var.function_object}"
-    "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
+    "OUTPUT_BUCKET"         = "gs://${google_storage_bucket.this.name}",
+    "PARENT"                = var.resource,
+    "TOPIC_ID"              = google_pubsub_topic.this.id,
+    "VERSION"               = "${var.function_bucket}/${var.function_object}",
+    "LOG_LEVEL"             = var.cloud_function_debug_level,
+    "GCP_REGION"            = var.gcp_region,
+    "TASK_QUEUE"            = google_cloud_tasks_queue.task_queue.name,
+    "SERVICE_ACCOUNT_EMAIL" = google_service_account.cloudfunction[0].email
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
@@ -92,10 +96,14 @@ resource "google_cloudfunctions_function" "gcs_function" {
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"        = var.resource
-    "TOPIC_ID"      = google_pubsub_topic.this.id
-    "VERSION"       = "${var.function_bucket}/${var.function_object}"
-    "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
+    "OUTPUT_BUCKET"         = "gs://${google_storage_bucket.this.name}",
+    "PARENT"                = var.resource,
+    "TOPIC_ID"              = google_pubsub_topic.this.id,
+    "VERSION"               = "${var.function_bucket}/${var.function_object}",
+    "LOG_LEVEL"             = var.cloud_function_debug_level,
+    "GCP_REGION"            = var.gcp_region,
+    "TASK_QUEUE"            = google_cloud_tasks_queue.task_queue.name,
+    "SERVICE_ACCOUNT_EMAIL" = google_service_account.cloudfunction[0].email
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   available_memory_mb = var.function_available_memory_mb
@@ -162,10 +170,14 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 
   runtime = "python310"
   environment_variables = merge({
-    "PARENT"        = var.resource
-    "TOPIC_ID"      = google_pubsub_topic.this.id
-    "VERSION"       = "${var.function_bucket}/${var.function_object}"
-    "OUTPUT_BUCKET" = "gs://${google_storage_bucket.this.name}"
+    "OUTPUT_BUCKET"         = "gs://${google_storage_bucket.this.name}",
+    "PARENT"                = var.resource,
+    "TOPIC_ID"              = google_pubsub_topic.this.id,
+    "VERSION"               = "${var.function_bucket}/${var.function_object}",
+    "LOG_LEVEL"             = var.cloud_function_debug_level,
+    "GCP_REGION"            = var.gcp_region,
+    "TASK_QUEUE"            = google_cloud_tasks_queue.task_queue.name,
+    "SERVICE_ACCOUNT_EMAIL" = google_service_account.cloudfunction[0].email
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
@@ -213,7 +225,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
 
 resource "google_cloud_tasks_queue" "task_queue" {
   name     = "${var.name}-task-queue"
-  location = var.queue_location
+  location = var.gcp_region
 
   rate_limits {
     max_concurrent_dispatches = var.max_concurrent_dispatches
