@@ -116,7 +116,8 @@ resource "google_cloudfunctions_function" "gcs_function" {
   source_archive_object = var.function_object
   entry_point           = "gcs_to_pubsub"
 
-  labels = var.labels
+  labels       = var.labels
+  trigger_http = true
 }
 
 resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
