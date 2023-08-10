@@ -22,12 +22,12 @@ data "google_folder" "this" {
 }
 
 resource "google_pubsub_topic" "this" {
-  name   = var.name
+  name   = "${var.name}-observe"
   labels = var.labels
 }
 
 resource "google_pubsub_subscription" "this" {
-  name   = var.name
+  name   = "${var.name}-observe"
   labels = var.labels
   topic  = google_pubsub_topic.this.name
 
@@ -41,7 +41,7 @@ resource "google_pubsub_subscription" "this" {
 
 resource "google_logging_project_sink" "this" {
   count       = local.resource_type == "projects" ? 1 : 0
-  name        = var.name
+  name        = "${var.name}-observe"
   project     = data.google_project.this.project_id
   destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
   filter      = var.logging_filter
@@ -62,7 +62,7 @@ resource "google_logging_project_sink" "this" {
 resource "google_logging_folder_sink" "this" {
   count = local.resource_type == "folders" ? 1 : 0
 
-  name             = var.name
+  name             = "${var.name}-observe"
   folder           = data.google_folder.this[0].folder_id
   destination      = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
   filter           = var.logging_filter
@@ -84,7 +84,7 @@ resource "google_logging_folder_sink" "this" {
 resource "google_logging_organization_sink" "this" {
   count = local.resource_type == "organizations" ? 1 : 0
 
-  name        = var.name
+  name        = "${var.name}-observe"
   org_id      = local.resource_id
   destination = "pubsub.googleapis.com/${google_pubsub_topic.this.id}"
   filter      = var.logging_filter
@@ -109,7 +109,7 @@ resource "google_pubsub_topic_iam_member" "sink_pubsub" {
 }
 
 resource "google_service_account" "poller" {
-  account_id  = "${var.name}-poll"
+  account_id  = "${var.name}-poller-observe"
   description = "A service account for the Observe Pub/Sub and Logging pollers"
 }
 

@@ -1,7 +1,7 @@
 resource "google_service_account" "cloudfunction" {
   count = var.enable_function ? 1 : 0
 
-  account_id  = "${var.name}-func"
+  account_id  = "${var.name}-observe-cloudfunctions"
   description = "Used by the Observe Cloud Functions"
 }
 
@@ -39,7 +39,7 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 }
 
 resource "google_storage_bucket" "this" {
-  name     = "${var.name}-${var.project_id}-bucket"
+  name     = "${var.name}-${var.project_id}-observe"
   location = "US"
 
   force_destroy = true
@@ -57,7 +57,7 @@ resource "google_storage_bucket_iam_member" "bucket_iam" {
 resource "google_cloudfunctions_function" "this" {
   count = var.enable_function ? 1 : 0
 
-  name                  = "${var.name}_assets_to_gcs"
+  name                  = "${var.name}_observe_assets_to_gcs"
   description           = "Polls data from the Google Cloud API and sends to the Observe Pub/Sub topic."
   service_account_email = google_service_account.cloudfunction[0].email
 
@@ -91,7 +91,7 @@ resource "google_cloudfunctions_function" "this" {
 resource "google_cloudfunctions_function" "gcs_function" {
   count = var.enable_function ? 1 : 0
 
-  name                  = "${var.name}_gcs_to_pubsub"
+  name                  = "${var.name}_observe_gcs_to_pubsub"
   description           = "Triggered by changes in the Google Cloud Storage bucket and sends data to the Observe Pub/Sub topic."
   service_account_email = google_service_account.cloudfunction[0].email
 
@@ -131,7 +131,7 @@ resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
 resource "google_service_account" "cloud_scheduler" {
   count = var.enable_function ? 1 : 0
 
-  account_id  = "${var.name}-sched"
+  account_id  = "${var.name}-scheudler-observe"
   description = "Allows the Cloud Scheduler job to trigger a Cloud Function"
 }
 
@@ -144,7 +144,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
-  name        = "${var.name}-job"
+  name        = "${var.name}-observe"
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule_frequency
 
@@ -167,7 +167,7 @@ resource "google_cloud_scheduler_job" "this" {
 resource "google_cloudfunctions_function" "rest_of_assets" {
   count = var.enable_function ? 1 : 0
 
-  name                  = "${var.name}_rest_of_assets"
+  name                  = "${var.name}_observe_rest_of_assets"
   description           = "Function that collections assets not capture by asset feed or asset exports."
   service_account_email = google_service_account.cloudfunction[0].email
 
@@ -199,7 +199,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 }
 
 resource "google_cloud_scheduler_job" "rest_of_assets" {
-  name        = "${var.name}-more-assets-job"
+  name        = "${var.name}-observe-more-assets-job"
   description = "Triggers the rest of assets Cloud Function"
   schedule    = var.function_schedule_frequency_rest_of_assets
 
@@ -228,7 +228,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
 }
 
 resource "google_cloud_tasks_queue" "task_queue" {
-  name     = "${var.name}-task-queue"
+  name     = "${var.name}-observe"
   location = var.gcp_region
 
   rate_limits {
@@ -237,6 +237,8 @@ resource "google_cloud_tasks_queue" "task_queue" {
   }
 
   retry_config {
-    max_attempts = var.max_attempts
+    max_attempts       = var.max_attempts
+    max_retry_duration = var.max_retry_duration
+    min_backoff        = var.min_backoff
   }
 }

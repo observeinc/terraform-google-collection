@@ -206,19 +206,31 @@ variable "gcp_region" {
 variable "max_concurrent_dispatches" {
   description = "The maximum number of tasks that can be dispatched concurrently."
   type        = number
-  default     = 5
+  default     = 2
 }
 
 variable "max_dispatches_per_second" {
   description = "The maximum rate at which tasks can be dispatched per second."
   type        = number
-  default     = 1
+  default     = 2
+}
+
+variable "max_retry_duration" {
+  description = "The time limit for retrying a task in seconds"
+  type        = string
+  default     = "7200s"
+}
+
+variable "min_backoff" {
+  description = "The minimum amount of time to wait between retries in seconds"
+  type        = string
+  default     = "30s"
 }
 
 variable "max_attempts" {
   description = "The maximum number of retry attempts for a task in case of failure."
   type        = number
-  default     = 3
+  default     = -1
 }
 
 variable "cloud_function_debug_level" {
