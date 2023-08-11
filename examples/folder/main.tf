@@ -26,4 +26,5 @@ module "observe_gcp_collection" {
   name       = var.name
   resource   = var.resource
   project_id = var.project_id
+  # function_max_instances = 22
 }

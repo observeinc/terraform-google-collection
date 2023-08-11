@@ -1,3 +1,8 @@
+
+resource "random_id" "cloudtasks_queue" {
+  byte_length = 8
+}
+
 resource "google_service_account" "cloudfunction" {
   count = var.enable_function ? 1 : 0
 
@@ -65,6 +70,7 @@ resource "google_cloudfunctions_function" "this" {
   environment_variables = merge({
     "OUTPUT_BUCKET"                = "gs://${google_storage_bucket.this.name}",
     "PARENT"                       = var.resource,
+    "PROJECT"                      = var.project_id
     "TOPIC_ID"                     = google_pubsub_topic.this.id,
     "VERSION"                      = "${var.function_bucket}/${var.function_object}",
     "LOG_LEVEL"                    = var.cloud_function_debug_level,
@@ -98,6 +104,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
   runtime = "python310"
   environment_variables = merge({
     "OUTPUT_BUCKET"                = "gs://${google_storage_bucket.this.name}",
+    "PROJECT"                      = var.project_id
     "PARENT"                       = var.resource,
     "TOPIC_ID"                     = google_pubsub_topic.this.id,
     "VERSION"                      = "${var.function_bucket}/${var.function_object}",
@@ -175,6 +182,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
   environment_variables = merge({
     "OUTPUT_BUCKET"                = "gs://${google_storage_bucket.this.name}",
     "PARENT"                       = var.resource,
+    "PROJECT"                      = var.project_id
     "TOPIC_ID"                     = google_pubsub_topic.this.id,
     "VERSION"                      = "${var.function_bucket}/${var.function_object}",
     "LOG_LEVEL"                    = var.cloud_function_debug_level,
@@ -228,7 +236,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
 }
 
 resource "google_cloud_tasks_queue" "task_queue" {
-  name     = "${var.name}-observe"
+  name     = "${random_id.cloudtasks_queue.hex}-observe"
   location = var.gcp_region
 
   rate_limits {
