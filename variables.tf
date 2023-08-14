@@ -113,6 +113,8 @@ variable "function_roles" {
     "roles/storage.admin",
     "roles/cloudfunctions.invoker",
     "roles/cloudtasks.enqueuer",
+    "roles/cloudtasks.viewer",
+    "roles/cloudtasks.taskDeleter",
     "roles/iam.serviceAccountUser"
   ]
 }
