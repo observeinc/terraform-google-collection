@@ -140,7 +140,7 @@ variable "function_bucket" {
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.3.0-alpha.30.zip"
+  default     = "google-cloud-functions-v0.3.0-alpha.31.zip"
 }
 
 variable "function_available_memory_mb" {
