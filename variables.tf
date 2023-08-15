@@ -106,11 +106,16 @@ variable "function_roles" {
     "roles/cloudasset.viewer",
     "roles/browser",
     "roles/logging.viewer",
-    "roles/monitoring.viewer", # for viewing projects
+    "roles/monitoring.viewer",
     "roles/storage.objectCreator",
     "roles/storage.objectViewer",
     "roles/storage.objectAdmin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/cloudfunctions.invoker",
+    "roles/cloudtasks.enqueuer",
+    "roles/cloudtasks.viewer",
+    "roles/cloudtasks.taskDeleter",
+    "roles/iam.serviceAccountUser"
   ]
 }
 
@@ -135,7 +140,7 @@ variable "function_bucket" {
 variable "function_object" {
   description = "GCS object key of the Cloud Function source code zip file"
   type        = string
-  default     = "google-cloud-functions-v0.3.0-alpha.15.zip"
+  default     = "google-cloud-functions-v0.3.0.zip"
 }
 
 variable "function_available_memory_mb" {
@@ -192,4 +197,46 @@ variable "project_id" {
   description = "Billing Project ID needed for asset feed."
   type        = string
   default     = null
+}
+
+variable "gcp_region" {
+  description = "The location where the Task Queue will be created."
+  type        = string
+  default     = "us-central1"
+}
+
+variable "max_concurrent_dispatches" {
+  description = "The maximum number of tasks that can be dispatched concurrently."
+  type        = number
+  default     = 2
+}
+
+variable "max_dispatches_per_second" {
+  description = "The maximum rate at which tasks can be dispatched per second."
+  type        = number
+  default     = 2
+}
+
+variable "max_retry_duration" {
+  description = "The time limit for retrying a task in seconds"
+  type        = string
+  default     = "7200s"
+}
+
+variable "min_backoff" {
+  description = "The minimum amount of time to wait between retries in seconds"
+  type        = string
+  default     = "30s"
+}
+
+variable "max_attempts" {
+  description = "The maximum number of retry attempts for a task in case of failure."
+  type        = number
+  default     = -1
+}
+
+variable "cloud_function_debug_level" {
+  description = "The debug level for the GCP cloud functions"
+  type        = string
+  default     = "WARNING"
 }
