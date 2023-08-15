@@ -20,11 +20,13 @@ resource "google_monitoring_monitored_project" "primary" {
 }
 
 module "observe_gcp_collection" {
-  source = "../../"
-  #source = "observeinc/collection/google"
+  # source = "../../"
+  source = "observeinc/collection/google"
 
   name       = var.name
   resource   = var.resource
+
+  # scoping project
+  # ref: https://cloud.google.com/monitoring/settings/multiple-projects
   project_id = var.project_id
-  # function_max_instances = 22
 }
