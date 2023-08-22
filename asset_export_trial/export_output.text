@@ -1,0 +1,148 @@
+Waiting for operation to complete...
+CONTENT_TYPE_UNSPECIFIED
+read_time {
+  seconds: 1686770915
+  nanos: 417887582
+}
+output_config {
+  gcs_destination {
+    uri_prefix: "gs://manual-joe-asset-export/test"
+  }
+}
+output_result {
+  gcs_result {
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Network/0"
+    uris: "gs://manual-joe-asset-export/test/cloudresourcemanager.googleapis.com/Project/0"
+    uris: "gs://manual-joe-asset-export/test/storage.googleapis.com/Bucket/0"
+    uris: "gs://manual-joe-asset-export/test/serviceusage.googleapis.com/Service/0"
+    uris: "gs://manual-joe-asset-export/test/iam.googleapis.com/ServiceAccount/0"
+    uris: "gs://manual-joe-asset-export/test/pubsub.googleapis.com/Topic/0"
+    uris: "gs://manual-joe-asset-export/test/iam.googleapis.com/ServiceAccountKey/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Route/0"
+    uris: "gs://manual-joe-asset-export/test/pubsub.googleapis.com/Subscription/0"
+    uris: "gs://manual-joe-asset-export/test/cloudbilling.googleapis.com/ProjectBillingInfo/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Project/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Subnetwork/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Firewall/0"
+  }
+}
+
+Waiting for operation to complete...
+RESOURCE
+read_time {
+  seconds: 1686770974
+  nanos: 424577590
+}
+output_config {
+  gcs_destination {
+    uri_prefix: "gs://manual-joe-asset-export/test"
+  }
+}
+output_result {
+  gcs_result {
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Network/0"
+    uris: "gs://manual-joe-asset-export/test/iam.googleapis.com/ServiceAccount/0"
+    uris: "gs://manual-joe-asset-export/test/cloudbilling.googleapis.com/ProjectBillingInfo/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Project/0"
+    uris: "gs://manual-joe-asset-export/test/pubsub.googleapis.com/Topic/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Firewall/0"
+    uris: "gs://manual-joe-asset-export/test/iam.googleapis.com/ServiceAccountKey/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Route/0"
+    uris: "gs://manual-joe-asset-export/test/storage.googleapis.com/Bucket/0"
+    uris: "gs://manual-joe-asset-export/test/pubsub.googleapis.com/Subscription/0"
+    uris: "gs://manual-joe-asset-export/test/serviceusage.googleapis.com/Service/0"
+    uris: "gs://manual-joe-asset-export/test/compute.googleapis.com/Subnetwork/0"
+    uris: "gs://manual-joe-asset-export/test/cloudresourcemanager.googleapis.com/Project/0"
+  }
+}
+
+Waiting for operation to complete...
+IAM_POLICY
+read_time {
+  seconds: 1686771017
+  nanos: 720378406
+}
+output_config {
+  gcs_destination {
+    uri_prefix: "gs://manual-joe-asset-export/test"
+  }
+}
+output_result {
+  gcs_result {
+    uris: "gs://manual-joe-asset-export/test/pubsub.googleapis.com/Subscription/0"
+    uris: "gs://manual-joe-asset-export/test/cloudresourcemanager.googleapis.com/Project/0"
+    uris: "gs://manual-joe-asset-export/test/pubsub.googleapis.com/Topic/0"
+    uris: "gs://manual-joe-asset-export/test/storage.googleapis.com/Bucket/0"
+  }
+}
+
+Waiting for operation to complete...
+ORG_POLICY
+read_time {
+  seconds: 1686771317
+  nanos: 726786191
+}
+output_config {
+  gcs_destination {
+    uri_prefix: "gs://manual-joe-asset-export/test"
+  }
+}
+output_result {
+}
+
+Waiting for operation to complete...
+ACCESS_POLICY
+read_time {
+  seconds: 1686771744
+  nanos: 13196206
+}
+output_config {
+  gcs_destination {
+    uri_prefix: "gs://manual-joe-asset-export/test"
+  }
+}
+output_result {
+}
+
+Waiting for operation to complete...
+OS_INVENTORY
+read_time {
+  seconds: 1686772109
+  nanos: 422919540
+}
+output_config {
+  gcs_destination {
+    uri_prefix: "gs://manual-joe-asset-export/test"
+  }
+}
+output_result {
+}
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/google/api_core/grpc_helpers.py", line 72, in error_remapped_callable
+    return callable_(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/grpc/_channel.py", line 1030, in __call__
+    return _end_unary_response_blocking(state, call, False, None)
+  File "/usr/local/lib/python3.10/site-packages/grpc/_channel.py", line 910, in _end_unary_response_blocking
+    raise _InactiveRpcError(state)  # pytype: disable=not-instantiable
+grpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:
+        status = StatusCode.INVALID_ARGUMENT
+        details = "Request contains an invalid argument."
+        debug_error_string = "UNKNOWN:Error received from peer ipv4:142.250.190.42:443 {created_time:"2023-06-14T14:51:36.482196-05:00", grpc_status:3, grpc_message:"Request contains an invalid argument."}"
+>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/joe/Dev/terraform-google-collection/asset_export_trial/main.py", line 61, in sample_export_assets
+    operation = client.export_assets(request=request)
+  File "/usr/local/lib/python3.10/site-packages/google/cloud/asset_v1/services/asset_service/client.py", line 642, in export_assets
+    response = rpc(
+  File "/usr/local/lib/python3.10/site-packages/google/api_core/gapic_v1/method.py", line 113, in __call__
+    return wrapped_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/google/api_core/timeout.py", line 120, in func_with_timeout
+    return func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/google/api_core/grpc_helpers.py", line 74, in error_remapped_callable
+    raise exceptions.from_grpc_error(exc) from exc
+google.api_core.exceptions.InvalidArgument: 400 Request contains an invalid argument.
