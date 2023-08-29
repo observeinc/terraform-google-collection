@@ -11,8 +11,8 @@ locals {
     )
   )
 
-  # inject "observe" into all of our named resources
-  name = var.name == "observe" ? var.name : "${var.name}-observe"
+  # inject "obs" into all of our named resources
+  name = var.name == "obs" ? var.name : "${var.name}-obs"
 }
 
 data "google_project" "this" {
@@ -112,7 +112,7 @@ resource "google_pubsub_topic_iam_member" "sink_pubsub" {
 }
 
 resource "google_service_account" "poller" {
-  account_id  = "${local.name}-poller"
+  account_id  = "${local.name}-poll"
   description = "A service account for the Observe Pub/Sub and Logging pollers"
 }
 
