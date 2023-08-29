@@ -6,7 +6,7 @@ resource "random_id" "cloudtasks_queue" {
 resource "google_service_account" "cloudfunction" {
   count = var.enable_function ? 1 : 0
 
-  account_id  = "${local.name}-cloudfunctions"
+  account_id  = "${local.name}-func"
   description = "Used by the Observe Cloud Functions"
 }
 
@@ -138,7 +138,7 @@ resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
 resource "google_service_account" "cloud_scheduler" {
   count = var.enable_function ? 1 : 0
 
-  account_id  = "${local.name}-scheduler"
+  account_id  = "${local.name}-sched"
   description = "Allows the Cloud Scheduler job to trigger a Cloud Function"
 }
 
