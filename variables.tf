@@ -1,7 +1,7 @@
 variable "name" {
   type        = string
   description = "Module name. Used as a name prefix."
-  default     = "observe"
+  default     = "obs"
 
   validation {
     condition     = length(var.name) <= 20
