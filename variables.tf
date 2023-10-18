@@ -146,7 +146,7 @@ variable "function_object" {
 variable "function_available_memory_mb" {
   description = "Memory (in MB), available to the function. Default value is 512. Possible values include 128, 256, 512, 1024, etc."
   type        = number
-  default     = 2048
+  default     = 4096
 }
 
 variable "function_timeout" {
