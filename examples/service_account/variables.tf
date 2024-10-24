@@ -15,8 +15,8 @@ variable "folder" {
 }
 
 variable "current_user" {
-  type = string
-  description = "value"
+  type        = string
+  description = "Your user principal email to add to terraform service account. Can be retrieved via `gcloud config get-value account`"
 }
 
 variable "project_collection_roles" {
