@@ -1,14 +1,12 @@
 
 variable "project" {
-    type = string
-    description = <<-EOF
-    The project ID to create the service account in.  For project collection, this will also assign the IAM roles to the account in the project.
-    EOF
+  type        = string
+  description = "The project ID where apis will be enabled"
 }
 
 variable "services" {
   description = "The list of APIs to enable for observe collection"
-  type = set(string)
+  type        = set(string)
   default = [
     "cloudasset.googleapis.com",
     "iam.googleapis.com",
