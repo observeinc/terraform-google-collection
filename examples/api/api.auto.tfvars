@@ -1,1 +1,1 @@
-project = "test-svc-account-automation"
+project = "my_project_id"
