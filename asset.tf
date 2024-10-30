@@ -3,7 +3,7 @@
 # particular folder.
 
 resource "google_cloud_asset_folder_feed" "folder_feed" {
-  count           = local.resource_type == "folders" ? 1 : 0
+  count           = local.resource_type == "folders" && var.enable_asset_feed ? 1 : 0
   billing_project = var.project_id
   folder          = data.google_folder.this[0].folder_id
   feed_id         = "${local.name}-asset-updates"
@@ -22,7 +22,7 @@ resource "google_cloud_asset_folder_feed" "folder_feed" {
 
 # Create a feed that sends notifications about network resource updates.
 resource "google_cloud_asset_project_feed" "project_feed" {
-  count        = local.resource_type == "projects" ? 1 : 0
+  count        = local.resource_type == "projects" && var.enable_asset_feed ? 1 : 0
   project      = var.project_id
   feed_id      = "${local.name}-asset-updates"
   content_type = "RESOURCE"
@@ -35,3 +35,4 @@ resource "google_cloud_asset_project_feed" "project_feed" {
     }
   }
 }
+
