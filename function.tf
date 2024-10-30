@@ -54,6 +54,7 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
+  count  = var.enable_function ? 1 : 0
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
@@ -151,6 +152,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
+  count       = var.enable_function ? 1 : 0
   name        = local.name
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule_frequency
@@ -207,6 +209,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 }
 
 resource "google_cloud_scheduler_job" "rest_of_assets" {
+  count       = var.enable_function ? 1 : 0
   name        = "${local.name}-more-assets-job"
   description = "Triggers the rest of assets Cloud Function"
   schedule    = var.function_schedule_frequency_rest_of_assets
@@ -236,6 +239,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
 }
 
 resource "google_cloud_tasks_queue" "task_queue" {
+  count    = var.enable_function ? 1 : 0
   name     = "${local.name}-${random_id.cloudtasks_queue.hex}"
   location = var.gcp_region
 
