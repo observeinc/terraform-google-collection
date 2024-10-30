@@ -111,7 +111,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
     "VERSION"                          = "${var.function_bucket}/${var.function_object}",
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
-    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
+    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue[0].name,
     "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = "not_applicable"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
