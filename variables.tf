@@ -125,6 +125,12 @@ variable "enable_function" {
   default     = true
 }
 
+variable "enable_asset_feed" {
+  description = "Whether to enable the Cloud asset inventory feed"
+  type        = bool
+  default     = true
+}
+
 variable "folder_include_children" {
   description = "Whether to include all children Projects of a Folder when collecting logs"
   type        = bool
@@ -240,3 +246,4 @@ variable "cloud_function_debug_level" {
   type        = string
   default     = "WARNING"
 }
+

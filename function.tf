@@ -54,6 +54,7 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
+  count  = var.enable_function ? 1 : 0
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
@@ -75,7 +76,7 @@ resource "google_cloudfunctions_function" "this" {
     "VERSION"                          = "${var.function_bucket}/${var.function_object}",
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
-    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
+    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue[0].name,
     "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email,
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function[0].https_trigger_url
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
@@ -110,7 +111,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
     "VERSION"                          = "${var.function_bucket}/${var.function_object}",
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
-    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
+    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue[0].name,
     "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = "not_applicable"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
@@ -151,6 +152,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
+  count       = var.enable_function ? 1 : 0
   name        = local.name
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule_frequency
@@ -187,7 +189,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
     "VERSION"                          = "${var.function_bucket}/${var.function_object}",
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
-    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
+    "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue[0].name,
     "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email,
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function[0].https_trigger_url
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
@@ -207,6 +209,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 }
 
 resource "google_cloud_scheduler_job" "rest_of_assets" {
+  count       = var.enable_function ? 1 : 0
   name        = "${local.name}-more-assets-job"
   description = "Triggers the rest of assets Cloud Function"
   schedule    = var.function_schedule_frequency_rest_of_assets
@@ -236,6 +239,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
 }
 
 resource "google_cloud_tasks_queue" "task_queue" {
+  count    = var.enable_function ? 1 : 0
   name     = "${local.name}-${random_id.cloudtasks_queue.hex}"
   location = var.gcp_region
 
