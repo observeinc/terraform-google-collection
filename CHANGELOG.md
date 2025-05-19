@@ -1,4 +1,18 @@
-# [0.5.0](https://github.com/observeinc/terraform-google-collection/compare/v0.4.0...v0.5.0) (2023-08-29)
+## [0.5.1](https://github.com/observeinc/terraform-google-collection/compare/v0.5.0...v0.5.1) (2025-05-19)
+
+
+### Bug Fixes
+
+* bump function max memory default ([#50](https://github.com/observeinc/terraform-google-collection/issues/50)) ([2875cd0](https://github.com/observeinc/terraform-google-collection/commit/2875cd0fb5429e1e6f937ab696e0f0e396358298))
+* updating to point at the latest version ([#53](https://github.com/observeinc/terraform-google-collection/issues/53)) ([0f3c5ae](https://github.com/observeinc/terraform-google-collection/commit/0f3c5ae7b6ff82e722e9c60ccf823d5ac4c3420b))
+
+
+
+# [0.5.0](https://github.com/observeinc/terraform-google-collection/compare/v0.6.0...v0.5.0) (2023-08-29)
+
+
+
+# [0.6.0](https://github.com/observeinc/terraform-google-collection/compare/v0.4.0...v0.6.0) (2023-08-29)
 
 
 ### Bug Fixes
