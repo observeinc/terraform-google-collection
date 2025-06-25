@@ -51,6 +51,26 @@ resource "google_storage_bucket" "this" {
   # Since the bucket is just a temporary storage for asset export objects until 
   # the function can process them, we want to implicitly delete any leftover objects
   # if Terraform plans to remove the bucket
+
+  # added for maintaining the bucket file and folder lifecycle
+  lifecycle_rule {
+    condition {
+      age = var.bucket_lifecycle_delete_days
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  lifecycle_rule {
+    condition {
+      age = var.bucket_lifecycle_abort_upload_days
+    }
+    action {
+      type = "AbortIncompleteMultipartUpload"
+    }
+  }
+
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
