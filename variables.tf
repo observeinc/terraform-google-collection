@@ -244,11 +244,11 @@ variable "cloud_function_debug_level" {
 variable "bucket_lifecycle_delete_days" {
   description = "The number of days to wait before Delete of temporary bucket files."
   type        = number
-  default     = 3  
+  default     = 14  
 }
 
 variable "bucket_lifecycle_abort_upload_days" {
   description = "The number of days to wait before deleting AbortIncompleteMultipartUpload."
   type        = number
-  default     = 1  
+  default     = 7  
 }
