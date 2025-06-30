@@ -240,3 +240,15 @@ variable "cloud_function_debug_level" {
   type        = string
   default     = "WARNING"
 }
+
+variable "bucket_lifecycle_delete_days" {
+  description = "The number of days to wait before Delete of temporary bucket files."
+  type        = number
+  default     = 14  
+}
+
+variable "bucket_lifecycle_abort_upload_days" {
+  description = "The number of days to wait before deleting AbortIncompleteMultipartUpload."
+  type        = number
+  default     = 7  
+}
