@@ -54,10 +54,10 @@ resource "google_logging_project_sink" "this" {
   dynamic "exclusions" {
     for_each = var.logging_exclusions
     content {
-      name        = exclusions.name
-      description = exclusions.description
-      filter      = exclusions.filter
-      disabled    = exclusions.disabled
+      name        = exclusions.value.name
+      description = exclusions.value.description
+      filter      = exclusions.value.filter
+      disabled    = exclusions.value.disabled
     }
   }
 }
@@ -76,10 +76,10 @@ resource "google_logging_folder_sink" "this" {
   dynamic "exclusions" {
     for_each = var.logging_exclusions
     content {
-      name        = exclusions.name
-      description = exclusions.description
-      filter      = exclusions.filter
-      disabled    = exclusions.disabled
+      name        = exclusions.value.name
+      description = exclusions.value.description
+      filter      = exclusions.value.filter
+      disabled    = exclusions.value.disabled
     }
   }
 }
@@ -97,10 +97,10 @@ resource "google_logging_organization_sink" "this" {
   dynamic "exclusions" {
     for_each = var.logging_exclusions
     content {
-      name        = exclusions.name
-      description = exclusions.description
-      filter      = exclusions.filter
-      disabled    = exclusions.disabled
+      name        = exclusions.value.name
+      description = exclusions.value.description
+      filter      = exclusions.value.filter
+      disabled    = exclusions.value.disabled
     }
   }
 }
