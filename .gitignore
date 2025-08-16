@@ -32,3 +32,6 @@ override.tf.json
 
 .terraform.lock.hcl
 .DS_Store
+/asset_export_trial/*.json
+asset_export_trial/__pycache__/main.cpython-310.pyc
+asset_export_trial/__pycache__/main.cpython-311.pyc
