@@ -74,8 +74,6 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
-  count = var.enable_function ? 1 : 0
-
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
@@ -117,7 +115,6 @@ resource "google_cloudfunctions_function" "this" {
 }
 
 resource "google_cloudfunctions_function" "gcs_function" {
-  count = var.enable_function ? 1 : 0
 
   name                  = "${local.name}_gcs_to_pubsub"
   description           = "Triggered by changes in the Google Cloud Storage bucket and sends data to the Observe Pub/Sub topic."
