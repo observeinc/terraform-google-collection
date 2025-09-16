@@ -97,7 +97,7 @@ resource "google_cloudfunctions_function" "this" {
     "GCP_REGION"                       = var.gcp_region,
     "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
     "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email,
-    "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function[0].https_trigger_url
+    "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function.https_trigger_url
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
@@ -210,7 +210,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
     "GCP_REGION"                       = var.gcp_region,
     "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
     "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email,
-    "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function[0].https_trigger_url
+    "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function.https_trigger_url
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
   trigger_http     = true
