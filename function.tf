@@ -15,7 +15,7 @@ resource "google_project_iam_member" "cloudfunction" {
 
   project = data.google_project.this.project_id
   role    = each.key
-  member  = "serviceAccount:${google_service_account.cloudfunction[0].email}"
+  member  = "serviceAccount:${google_service_account.cloudfunction.email}"
 }
 
 resource "google_folder_iam_member" "cloudfunction" {
@@ -23,7 +23,7 @@ resource "google_folder_iam_member" "cloudfunction" {
 
   folder = var.resource
   role   = each.key
-  member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
+  member = "serviceAccount:${google_service_account.cloudfunction.email}"
 }
 
 resource "google_organization_iam_member" "cloudfunction" {
@@ -31,7 +31,7 @@ resource "google_organization_iam_member" "cloudfunction" {
 
   org_id = var.resource
   role   = each.key
-  member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
+  member = "serviceAccount:${google_service_account.cloudfunction.email}"
 }
 
 
@@ -40,7 +40,7 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 
   topic  = google_pubsub_topic.this.name
   role   = "roles/pubsub.publisher"
-  member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
+  member = "serviceAccount:${google_service_account.cloudfunction.email}"
 }
 
 resource "google_storage_bucket" "this" {
@@ -76,7 +76,7 @@ resource "google_storage_bucket" "this" {
 resource "google_storage_bucket_iam_member" "bucket_iam" {
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
+  member = "serviceAccount:${google_service_account.cloudfunction.email}"
 }
 
 resource "google_cloudfunctions_function" "this" {
@@ -84,7 +84,7 @@ resource "google_cloudfunctions_function" "this" {
 
   name                  = "${local.name}_assets_to_gcs"
   description           = "Polls data from the Google Cloud API and sends to the Observe Pub/Sub topic."
-  service_account_email = google_service_account.cloudfunction[0].email
+  service_account_email = google_service_account.cloudfunction.email
 
   runtime = "python310"
   environment_variables = merge({
@@ -96,7 +96,7 @@ resource "google_cloudfunctions_function" "this" {
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
     "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
-    "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email,
+    "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction.email,
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function.https_trigger_url
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
@@ -151,7 +151,7 @@ resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
 
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
+  member = "serviceAccount:${google_service_account.cloudfunction.email}"
 }
 
 resource "google_service_account" "cloud_scheduler" {
@@ -197,7 +197,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 
   name                  = "${local.name}_observe_rest_of_assets"
   description           = "Function that collections assets not capture by asset feed or asset exports."
-  service_account_email = google_service_account.cloudfunction[0].email
+  service_account_email = google_service_account.cloudfunction.email
 
   runtime = "python310"
   environment_variables = merge({
@@ -209,7 +209,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
     "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
-    "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email,
+    "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction.email,
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = google_cloudfunctions_function.gcs_function.https_trigger_url
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
