@@ -118,7 +118,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
 
   name                  = "${local.name}_gcs_to_pubsub"
   description           = "Triggered by changes in the Google Cloud Storage bucket and sends data to the Observe Pub/Sub topic."
-  service_account_email = google_service_account.cloudfunction[0].email
+  service_account_email = google_service_account.cloudfunction.email
 
   runtime = "python310"
   environment_variables = merge({
@@ -130,7 +130,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
     "LOG_LEVEL"                        = var.cloud_function_debug_level,
     "GCP_REGION"                       = var.gcp_region,
     "TASK_QUEUE"                       = google_cloud_tasks_queue.task_queue.name,
-    "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction[0].email
+    "SERVICE_ACCOUNT_EMAIL"            = google_service_account.cloudfunction.email
     "GCS_TO_PUBSUB_CLOUD_FUNCTION_URI" = "not_applicable"
   }, var.function_disable_logging ? { "DISABLE_LOGGING" : "ok" } : {})
 
