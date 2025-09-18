@@ -4,7 +4,7 @@ resource "random_id" "cloudtasks_queue" {
 }
 
 resource "google_service_account" "cloudfunction" {
-  count = var.enable_function ? 1 : 0
+  count = 1
 
   account_id  = "${local.name}-func"
   description = "Used by the Observe Cloud Functions"
@@ -36,7 +36,7 @@ resource "google_organization_iam_member" "cloudfunction" {
 
 
 resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
-  count = var.enable_function ? 1 : 0
+  #count = var.enable_function ? 1 : 0
 
   topic  = google_pubsub_topic.this.name
   role   = "roles/pubsub.publisher"
@@ -74,6 +74,7 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
+  #count = var.enable_function ? 1 : 0
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
@@ -115,7 +116,7 @@ resource "google_cloudfunctions_function" "this" {
 }
 
 resource "google_cloudfunctions_function" "gcs_function" {
-  count = var.enable_function ? 1 : 0
+  count = 1
 
   name                  = "${local.name}_gcs_to_pubsub"
   description           = "Triggered by changes in the Google Cloud Storage bucket and sends data to the Observe Pub/Sub topic."
@@ -148,7 +149,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
 }
 
 resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
-  count = var.enable_function ? 1 : 0
+  #count = var.enable_function ? 1 : 0
 
   bucket = google_storage_bucket.this.name
   role   = "roles/storage.objectViewer"
@@ -171,6 +172,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
+  count = var.enable_function ? 1 : 0
   name        = local.name
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule_frequency
@@ -227,6 +229,8 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 }
 
 resource "google_cloud_scheduler_job" "rest_of_assets" {
+  count = var.enable_function ? 1 : 0
+
   name        = "${local.name}-more-assets-job"
   description = "Triggers the rest of assets Cloud Function"
   schedule    = var.function_schedule_frequency_rest_of_assets
