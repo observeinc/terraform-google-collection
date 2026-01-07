@@ -119,8 +119,8 @@ variable "function_roles" {
   ]
 }
 
-variable "enable_function" {
-  description = "Whether to enable the Cloud function"
+variable "enable_asset_tracking" {
+  description = "Whether to enable the Cloud function that tracks GCP assets."
   type        = bool
   default     = true
 }

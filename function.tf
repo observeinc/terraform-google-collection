@@ -4,14 +4,14 @@ resource "random_id" "cloudtasks_queue" {
 }
 
 resource "google_service_account" "cloudfunction" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   account_id  = "${local.name}-func"
   description = "Used by the Observe Cloud Functions"
 }
 
 resource "google_project_iam_member" "cloudfunction" {
-  for_each = var.enable_function && local.resource_type == "projects" ? var.function_roles : toset([])
+  for_each = var.enable_asset_tracking && local.resource_type == "projects" ? var.function_roles : toset([])
 
   project = data.google_project.this.project_id
   role    = each.key
@@ -19,7 +19,7 @@ resource "google_project_iam_member" "cloudfunction" {
 }
 
 resource "google_folder_iam_member" "cloudfunction" {
-  for_each = var.enable_function && local.resource_type == "folders" ? var.function_roles : toset([])
+  for_each = var.enable_asset_tracking && local.resource_type == "folders" ? var.function_roles : toset([])
 
   folder = var.resource
   role   = each.key
@@ -27,7 +27,7 @@ resource "google_folder_iam_member" "cloudfunction" {
 }
 
 resource "google_organization_iam_member" "cloudfunction" {
-  for_each = var.enable_function && local.resource_type == "organizations" ? var.function_roles : toset([])
+  for_each = var.enable_asset_tracking && local.resource_type == "organizations" ? var.function_roles : toset([])
 
   org_id = var.resource
   role   = each.key
@@ -36,7 +36,7 @@ resource "google_organization_iam_member" "cloudfunction" {
 
 
 resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   topic  = google_pubsub_topic.this.name
   role   = "roles/pubsub.publisher"
@@ -44,6 +44,7 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 }
 
 resource "google_storage_bucket" "this" {
+  count = var.enable_asset_tracking ? 1 : 0
   name     = "${var.project_id}-${local.name}"
   location = "US"
 
@@ -74,13 +75,14 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
-  bucket = google_storage_bucket.this.name
+  count = var.enable_asset_tracking ? 1 : 0
+  bucket = google_storage_bucket.this[0].name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
 }
 
 resource "google_cloudfunctions_function" "this" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   name                  = "${local.name}_assets_to_gcs"
   description           = "Polls data from the Google Cloud API and sends to the Observe Pub/Sub topic."
@@ -88,7 +90,7 @@ resource "google_cloudfunctions_function" "this" {
 
   runtime = "python310"
   environment_variables = merge({
-    "OUTPUT_BUCKET"                    = "gs://${google_storage_bucket.this.name}",
+    "OUTPUT_BUCKET"                    = "gs://${google_storage_bucket.this[0].name}",
     "PARENT"                           = var.resource,
     "PROJECT"                          = var.project_id
     "TOPIC_ID"                         = google_pubsub_topic.this.id,
@@ -115,7 +117,7 @@ resource "google_cloudfunctions_function" "this" {
 }
 
 resource "google_cloudfunctions_function" "gcs_function" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   name                  = "${local.name}_gcs_to_pubsub"
   description           = "Triggered by changes in the Google Cloud Storage bucket and sends data to the Observe Pub/Sub topic."
@@ -123,7 +125,7 @@ resource "google_cloudfunctions_function" "gcs_function" {
 
   runtime = "python310"
   environment_variables = merge({
-    "OUTPUT_BUCKET"                    = "gs://${google_storage_bucket.this.name}",
+    "OUTPUT_BUCKET"                    = "gs://${google_storage_bucket.this[0].name}",
     "PROJECT"                          = var.project_id
     "PARENT"                           = var.resource,
     "TOPIC_ID"                         = google_pubsub_topic.this.id,
@@ -148,22 +150,22 @@ resource "google_cloudfunctions_function" "gcs_function" {
 }
 
 resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
-  bucket = google_storage_bucket.this.name
+  bucket = google_storage_bucket.this[0].name
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
 }
 
 resource "google_service_account" "cloud_scheduler" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   account_id  = "${local.name}-sched"
   description = "Allows the Cloud Scheduler job to trigger a Cloud Function"
 }
 
 resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   cloud_function = google_cloudfunctions_function.this[0].name
   role           = "roles/cloudfunctions.invoker"
@@ -171,6 +173,7 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
+  count = var.enable_asset_tracking ? 1 : 0
   name        = local.name
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule_frequency
@@ -192,7 +195,7 @@ resource "google_cloud_scheduler_job" "this" {
 }
 
 resource "google_cloudfunctions_function" "rest_of_assets" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   name                  = "${local.name}_observe_rest_of_assets"
   description           = "Function that collections assets not capture by asset feed or asset exports."
@@ -200,7 +203,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 
   runtime = "python310"
   environment_variables = merge({
-    "OUTPUT_BUCKET"                    = "gs://${google_storage_bucket.this.name}",
+    "OUTPUT_BUCKET"                    = "gs://${google_storage_bucket.this[0].name}",
     "PARENT"                           = var.resource,
     "PROJECT"                          = var.project_id
     "TOPIC_ID"                         = google_pubsub_topic.this.id,
@@ -227,6 +230,7 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 }
 
 resource "google_cloud_scheduler_job" "rest_of_assets" {
+  count = var.enable_asset_tracking ? 1 : 0
   name        = "${local.name}-more-assets-job"
   description = "Triggers the rest of assets Cloud Function"
   schedule    = var.function_schedule_frequency_rest_of_assets
@@ -248,7 +252,7 @@ resource "google_cloud_scheduler_job" "rest_of_assets" {
 }
 
 resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_assets" {
-  count = var.enable_function ? 1 : 0
+  count = var.enable_asset_tracking ? 1 : 0
 
   cloud_function = google_cloudfunctions_function.rest_of_assets[0].name
   role           = "roles/cloudfunctions.invoker"
