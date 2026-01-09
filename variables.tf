@@ -119,6 +119,17 @@ variable "function_roles" {
   ]
 }
 
+variable "enable_function" {
+  description = "DEPRECATED: This variable has been renamed to 'enable_asset_tracking'. Please update your configuration to use 'enable_asset_tracking' instead."
+  type        = bool
+  default     = null
+
+  validation {
+    condition     = var.enable_function == null
+    error_message = "The 'enable_function' variable is deprecated and no longer supported. Please use 'enable_asset_tracking' instead. Setting 'enable_function = false' did not work as expected in previous versions. Use 'enable_asset_tracking = false' to disable asset tracking functions."
+  }
+}
+
 variable "enable_asset_tracking" {
   description = "Whether to enable the Cloud function that tracks GCP assets."
   type        = bool
