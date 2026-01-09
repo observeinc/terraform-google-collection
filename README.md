@@ -190,6 +190,7 @@ No modules.
 | <a name="input_bucket_lifecycle_delete_days"></a> [bucket\_lifecycle\_delete\_days](#input\_bucket\_lifecycle\_delete\_days) | The number of days to wait before Delete of temporary bucket files. | `number` | `14` | no |
 | <a name="input_cloud_function_debug_level"></a> [cloud\_function\_debug\_level](#input\_cloud\_function\_debug\_level) | The debug level for the GCP cloud functions | `string` | `"WARNING"` | no |
 | <a name="input_enable_asset_tracking"></a> [enable\_asset\_tracking](#input\_enable\_asset\_tracking) | Whether to enable the Cloud function that tracks GCP assets. | `bool` | `true` | no |
+| <a name="input_enable_function"></a> [enable\_function](#input\_enable\_function) | DEPRECATED: This variable has been renamed to 'enable\_asset\_tracking'. Please update your configuration to use 'enable\_asset\_tracking' instead. | `bool` | `null` | no |
 | <a name="input_folder_include_children"></a> [folder\_include\_children](#input\_folder\_include\_children) | Whether to include all children Projects of a Folder when collecting logs | `bool` | `true` | no |
 | <a name="input_function_available_memory_mb"></a> [function\_available\_memory\_mb](#input\_function\_available\_memory\_mb) | Memory (in MB), available to the function. Default value is 512. Possible values include 128, 256, 512, 1024, etc. | `number` | `4096` | no |
 | <a name="input_function_bucket"></a> [function\_bucket](#input\_function\_bucket) | GCS bucket containing the Cloud Function source code | `string` | `"observeinc"` | no |
