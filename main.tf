@@ -25,14 +25,18 @@ data "google_folder" "this" {
 }
 
 resource "google_pubsub_topic" "this" {
-  name   = local.name
-  labels = var.labels
+  name    = local.name
+  labels  = var.labels
+  project = data.google_project.this.project_id
+
 }
 
 resource "google_pubsub_subscription" "this" {
-  name   = local.name
-  labels = var.labels
-  topic  = google_pubsub_topic.this.name
+  name    = local.name
+  labels  = var.labels
+  topic   = google_pubsub_topic.this.name
+  project = data.google_project.this.project_id
+
 
   ack_deadline_seconds       = var.pubsub_ack_deadline_seconds
   message_retention_duration = var.pubsub_message_retention_duration
@@ -114,6 +118,7 @@ resource "google_pubsub_topic_iam_member" "sink_pubsub" {
 resource "google_service_account" "poller" {
   account_id  = "${local.name}-poll"
   description = "A service account for the Observe Pub/Sub and Logging pollers"
+  project     = data.google_project.this.project_id
 }
 
 resource "google_pubsub_subscription_iam_member" "poller_pubsub" {

@@ -6,6 +6,7 @@ resource "random_id" "cloudtasks_queue" {
 resource "google_service_account" "cloudfunction" {
   count = var.enable_asset_tracking ? 1 : 0
 
+  project     = data.google_project.this.project_id
   account_id  = "${local.name}-func"
   description = "Used by the Observe Cloud Functions"
 }
@@ -44,7 +45,7 @@ resource "google_pubsub_topic_iam_member" "cloudfunction_pubsub" {
 }
 
 resource "google_storage_bucket" "this" {
-  count = var.enable_asset_tracking ? 1 : 0
+  count    = var.enable_asset_tracking ? 1 : 0
   name     = "${var.project_id}-${local.name}"
   location = "US"
 
@@ -75,7 +76,7 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "bucket_iam" {
-  count = var.enable_asset_tracking ? 1 : 0
+  count  = var.enable_asset_tracking ? 1 : 0
   bucket = google_storage_bucket.this[0].name
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.cloudfunction[0].email}"
@@ -85,6 +86,8 @@ resource "google_cloudfunctions_function" "this" {
   count = var.enable_asset_tracking ? 1 : 0
 
   name                  = "${local.name}_assets_to_gcs"
+  project               = data.google_project.this.project_id
+  region                = var.gcp_region
   description           = "Polls data from the Google Cloud API and sends to the Observe Pub/Sub topic."
   service_account_email = google_service_account.cloudfunction[0].email
 
@@ -119,7 +122,10 @@ resource "google_cloudfunctions_function" "this" {
 resource "google_cloudfunctions_function" "gcs_function" {
   count = var.enable_asset_tracking ? 1 : 0
 
+
   name                  = "${local.name}_gcs_to_pubsub"
+  project               = data.google_project.this.project_id
+  region                = var.gcp_region
   description           = "Triggered by changes in the Google Cloud Storage bucket and sends data to the Observe Pub/Sub topic."
   service_account_email = google_service_account.cloudfunction[0].email
 
@@ -158,7 +164,9 @@ resource "google_storage_bucket_iam_member" "gcs_function_bucket_iam" {
 }
 
 resource "google_service_account" "cloud_scheduler" {
-  count = var.enable_asset_tracking ? 1 : 0
+  count   = var.enable_asset_tracking ? 1 : 0
+  project = data.google_project.this.project_id
+
 
   account_id  = "${local.name}-sched"
   description = "Allows the Cloud Scheduler job to trigger a Cloud Function"
@@ -173,8 +181,10 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler" {
 }
 
 resource "google_cloud_scheduler_job" "this" {
-  count = var.enable_asset_tracking ? 1 : 0
+  count       = var.enable_asset_tracking ? 1 : 0
   name        = local.name
+  project     = data.google_project.this.project_id
+  region      = var.gcp_region
   description = "Triggers the Cloud Function"
   schedule    = var.function_schedule_frequency
 
@@ -198,6 +208,8 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
   count = var.enable_asset_tracking ? 1 : 0
 
   name                  = "${local.name}_observe_rest_of_assets"
+  project               = data.google_project.this.project_id
+  region                = var.gcp_region
   description           = "Function that collections assets not capture by asset feed or asset exports."
   service_account_email = google_service_account.cloudfunction[0].email
 
@@ -230,8 +242,10 @@ resource "google_cloudfunctions_function" "rest_of_assets" {
 }
 
 resource "google_cloud_scheduler_job" "rest_of_assets" {
-  count = var.enable_asset_tracking ? 1 : 0
+  count       = var.enable_asset_tracking ? 1 : 0
   name        = "${local.name}-more-assets-job"
+  project     = data.google_project.this.project_id
+  region      = var.gcp_region
   description = "Triggers the rest of assets Cloud Function"
   schedule    = var.function_schedule_frequency_rest_of_assets
 
@@ -262,6 +276,8 @@ resource "google_cloudfunctions_function_iam_member" "cloud_scheduler_rest_of_as
 resource "google_cloud_tasks_queue" "task_queue" {
   name     = "${local.name}-${random_id.cloudtasks_queue.hex}"
   location = var.gcp_region
+  project  = data.google_project.this.project_id
+
 
   rate_limits {
     max_concurrent_dispatches = var.max_concurrent_dispatches
